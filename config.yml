@@ -1,0 +1,4 @@
+default:
+  baseurl: "https://www.datim.org/"
+  log_path: "/var/log/narratives/narratives.log"
+  deploy_location: "/home/jason/development/narratives-app/"

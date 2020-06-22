@@ -1,0 +1,182 @@
+---
+title: "MER Results Narratives FY2020Q2 "
+date: "`r paste0('Generated on ' , format(Sys.time(), '%Y-%m-%d'))`"
+output:
+  pdf_document:
+    toc: no
+    latex_engine: xelatex
+header-includes:
+    - \usepackage{fancyhdr}
+---
+\addtolength{\headheight}{1.0cm}
+\pagestyle{fancyplain}
+\rhead{\includegraphics[height=1.2cm]{/home/jason/development/Global/src/R/partnerNarratives/pepfar.png}}
+\renewcommand{\headrulewidth}{0pt} 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r header ,results='asis', echo=FALSE}
+
+
+if (!is.null(partner_data)) {
+cat('# Partner Narratives')
+cat('\n\n')
+cat(paste0("**Operating Unit: ",partner_data$ou[1]),"**")
+cat('\n\n')
+}
+
+```
+
+
+```{r partners ,results='asis', echo=FALSE}
+
+if (!is.null(partner_data)) {
+
+unique_countries<-unique(partner_data$country)
+
+for (x in seq_along(unique_countries)) {
+cat(paste0("## Country: ",unique_countries[x]))
+cat('\n\n') 
+
+country_data<-partner_data %>% 
+    dplyr::filter(country == unique_countries[x]) %>% 
+    dplyr::arrange(`Data`)
+  
+unique_mechs<-unique(country_data$code)
+
+cat(paste0("Total number of partner narratives: ", NROW(country_data)))
+cat('\n\n')
+
+covid_narratives<-country_data$Value %>% 
+  tolower(.) %>% 
+  stringr::str_detect(.,"covid") %>% 
+  sum(.)
+
+cat(paste0("Narratives containing references to COVID: ", covid_narratives ))
+cat('\n\n')
+
+for ( y in seq_along(unique_mechs)) {
+
+mech_data<-country_data %>%  
+  dplyr::filter(code == unique_mechs[y]) %>%
+  dplyr::arrange(`Data`)
+  
+cat(paste0("### Mechanism: ",mech_data$mechanism[1]))
+cat('\n\n') 
+cat(paste0("**Agency: ",mech_data$agency[1],"**"))
+cat('\n\n')
+cat(paste0("**Partner: ",mech_data$partner[1],"**"))
+cat('\n\n')
+
+for (k in 1:NROW(mech_data)) {
+ cat(paste0("**",mech_data$`Data`[k],"**"))
+ cat('\n\n')
+ this_narrative<-mech_data$Value[k] %>% 
+   stringr::str_replace("\n","\n\n") %>% 
+   stringr::str_replace("%","%") %>% 
+   seqinr::stresc(.)
+ 
+ cat(paste0(this_narrative))
+cat('\n\n')
+}
+  cat('\n\n')
+  cat('\\pagebreak')
+  cat('\n\n')  }
+}
+}
+
+```
+
+
+```{r usg_body ,results='asis', echo=FALSE}
+
+if (!is.null(usg_data)) {
+  
+cat("# USG Narratives")
+cat('\n\n')
+cat(paste0("**Operating Unit: ",partner_data$ou[1]),"**")
+cat('\n\n')
+
+unique_countries<-unique(usg_data$country)
+
+for (j in seq_along(unique_countries))
+  country_data<-usg_data %>% 
+    dplyr::filter(country == unique_countries[j]) %>% 
+   dplyr::arrange(`Data`)
+
+cat(paste0('## Country:',country_data$country[1] ))
+cat('\n\n')
+
+for (k in 1:NROW(country_data)) {
+ cat(paste0("**",country_data$`Data`[k],"**"))
+ cat('\n\n')
+ this_narrative<-country_data$Value[k] %>% 
+   stringr::str_replace("\n","\n\n") %>% 
+   stringr::str_replace("\\\\","\\") %>% 
+   stringr::str_replace("%","%") %>% 
+   stringr::str_replace("\\$","USD")
+ cat(paste0(this_narrative))
+cat('\n\n')
+}  
+}
+cat('\\pagebreak')
+
+```
+
+```{r wordcloud , echo=FALSE , warning=FALSE, message=FALSE, results='asis', include=FALSE}
+# cat('# Wordcloud!  ')
+# cat('\n\n')
+# 
+# cat("This is a wordcloud generated from the narratives contained in this document. ")
+# cat('\n\n')
+# cat('\n\n')
+# generateWordCloud <- function(partner_data, usg_data) {
+#   all_text <-
+#   data.frame(
+#   all_narratives = c(partner_data$Value, usg_data$Value),
+#   stringsAsFactors = FALSE
+#   )
+#   myCorpus <- Corpus(VectorSource(all_text$all_narratives))
+#   docs <- myCorpus %>%
+#   tm_map(removeNumbers) %>%
+#   tm_map(removePunctuation) %>%
+#   tm_map(stripWhitespace)
+#   
+#   docs <- tm_map(docs, removeWords, stopwords("english"))
+#   
+#   docs <- tm_map(docs, removeWords, c("the", "of"))
+#   
+#   dtm <- TermDocumentMatrix(docs)
+#   
+#   matrix <- as.matrix(dtm)
+#   
+#   words <- sort(rowSums(matrix), decreasing = TRUE)
+#   
+#   df <- data.frame(word = names(words), freq = words)
+#   
+#   set.seed(1234) # for reproducibility
+#   wordcloud(
+#   words = df$word,
+#   freq = df$freq,
+#   min.freq = 2,
+#   max.words = 200,
+#   random.order = FALSE,
+#   rot.per = 0.35,
+#   colors = brewer.pal(8, "Dark2")
+#   )
+# }
+# 
+# generateWordCloud(partner_data, usg_data)
+```
+
+
+```{r  echo=FALSE , warning=FALSE, message=FALSE, results='asis'}
+
+cat("# Partner Sentiment Comparison")
+cat('\n\n')
+
+knitr::kable(sentimentTable(partner_data),caption = "Sentiment Comparison")
+
+```
