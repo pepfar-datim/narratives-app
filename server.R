@@ -16,7 +16,6 @@ require(scales)
 require(rpivotTable)
 
 source("./utils.R")
-source("./partner_narratives.R")
 
 shinyServer(function(input, output, session) {
   
@@ -25,7 +24,8 @@ shinyServer(function(input, output, session) {
   user_input <- reactiveValues(authenticated = FALSE, 
                                status = "",
                                user_operating_units=NA,
-                               user_mechs=NA)
+                               user_mechs=NA,
+                               mech_dropdown = NA)
   
   observeEvent(input$fetch, {
     shinyjs::disable("fetch")
@@ -49,10 +49,15 @@ shinyServer(function(input, output, session) {
       user_input$user_operating_units<- getUserOperatingUnits(getOption("organisationUnit")) %>% 
         dplyr::select(name,id) %>% 
         tibble::deframe()
-      user_input$user_mechs<-getUserMechanisms()
+      
+      user_input$user_mechs<-getUserMechanisms() 
+      
+      user_input$mech_dropdown <- user_input$user_mechs %>% 
+        dplyr::select(mech_code,categoryoptioncomboid) %>% 
+        tibble::deframe()
       
       flog.info(paste0("User operating unit is ", getOption("organisationUnit")))
-      print(user_input$user_operating_unit)
+
     } else {
       sendSweetAlert(
         session,
@@ -95,14 +100,26 @@ shinyServer(function(input, output, session) {
                         label= "Operating Unit",
                         user_input$user_operating_units),
             tags$hr(),
+            selectInput(inputId = "fiscal_year", 
+                        label= "Fiscal Year",
+                        c("FY20"=2020,"FY19"=2019,"FY18"=2018,"FY17"=2017,"FY16"=2016)),
+            tags$hr(),
+            selectInput(inputId = "fiscal_quarter", 
+                        label= "Fiscal Quarter",
+                        c(1,2,3,4)),
+            tags$hr(),
             selectInput(inputId = "mechs", 
                         label= "Mechanisms",
-                        user_input$user_mechs),
-            actionButton("fetch","Fetch")
+                        user_input$mech_dropdown ),
+            actionButton("fetch","Fetch"),
+            radioButtons('format', 'Document format', c('PDF', 'XLSX'),
+                         inline = TRUE),
+            downloadButton('downloadReport')
           ),
           mainPanel(tabsetPanel(
             id = "main-panel",
-            type = "tabs"
+            type = "tabs",
+            tabPanel("Narratives", dataTableOutput('narratives'))
             
           ))
         ))
@@ -126,19 +143,73 @@ shinyServer(function(input, output, session) {
     ))
   })
   
+  
+  #Outputs 
+  output$narratives <- DT::renderDataTable({
+    
+    vr<-narrative_results()
+    
+    if (!inherits(vr,"error") & !is.null(vr)){
+      vr
+    } else {
+      NULL
+    }
+  })
+  
+  
+  output$downloadReport <- downloadHandler(
+    filename = function() {
+      
+      paste('my-report', sep = '.', switch(
+        input$format, PDF = 'pdf', XLSX = 'xlsx'
+      ))
+    },
+    
+    content = function(file) {
+      
+      
+      src <- normalizePath('partner_narratives_template.Rmd')
+      
+      # temporarily switch to the temp dir, in case you do not have write
+      # permission to the current working directory
+      owd <- setwd(tempdir())
+      on.exit(setwd(owd))
+      file.copy(src, 'report.Rmd', overwrite = TRUE)
+      
+      library(rmarkdown)
+      out <- render('report.Rmd', switch(
+        input$format,
+        PDF = pdf_document(latex_engine = "xelatex"), HTML = html_document(), Word = word_document()
+      ))
+      file.rename(out, file)
+    }
+  )
+  
+  
   fetch<-function() {
     
     
     if (!ready$ok) {
-      shinyjs::disable("fetch")
       return(NULL)
-    }
-    
-    messages<-""
-  
-    messages<-list()
-    d<-NULL
-    return(d)
+    } else {
+      
+
+      url <- assemblePartnerNarrativeURL(ou = input$ou, 
+                                         fiscal_year = input$fiscal_year,
+                                         fiscal_quarter = input$fiscal_quarter)
+      
+      
+      d <- d2_analyticsResponse(url) %>%
+        dplyr::arrange(`Funding Mechanism`) %>%
+        dplyr::arrange(`Data`) %>%
+        dplyr::mutate(mech_code =  {
+          stringr::str_split(`Funding Mechanism`, " - ") %>%
+            map(., purrr::pluck(2)) %>% 
+            unlist()
+        } ) %>% 
+          dplyr::left_join(user_input$user_mechs, by = "mech_code")
+      return(d)
+    } 
     
   }
   
