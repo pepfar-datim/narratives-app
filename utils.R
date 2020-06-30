@@ -24,17 +24,34 @@ DHISLogin <- function(baseurl, username, password) {
 }
 
 
-getUserOperatingUnits<-function(uid) {
+getOperatingUnits<-function(config) {
   
-  #Global user
-  if ( uid == "ybg3MO3hcf4" ) {
-    datimvalidation::getValidOperatingUnits()
-  } else {
-    
-    datimvalidation::getValidOperatingUnits() %>% 
-      dplyr::filter(id == uid)
-  }
-}
+  
+  ou_map<-paste0(getOption("baseurl"),"api/dataStore/dataSetAssignments/orgUnitLevels") %>% 
+    URLencode(.) %>% 
+    httr::GET(.) %>% 
+    httr::content(.,"text") %>% 
+    jsonlite::fromJSON(.) %>% 
+    dplyr::bind_rows() %>% 
+    dplyr::rowwise() %>% 
+    dplyr::mutate( country = dplyr::case_when( nchar(name4) == 0 ~ name3,
+                                           TRUE ~ name4),
+                   ou = name3) %>% 
+    dplyr::select(ou,country)
+  
+  ous<-paste0(getOption("baseurl"),"api/organisationUnits?filter=level:lt:5&fields=id,name&paging=false") %>% 
+    URLencode(.) %>% 
+    httr::GET(.) %>% 
+    httr::content(.,"text") %>% 
+    jsonlite::fromJSON(.) %>% 
+    purrr::pluck("organisationUnits")
+  
+  ou_map %>% 
+    dplyr::inner_join(ous,by=c("country"="name")) %>% 
+    dplyr::rename(country_id = id) %>% 
+    dplyr::inner_join(ous,by=c("ou"="name")) %>% 
+    dplyr::rename(ou_id = id) %>% 
+    dplyr::arrange(ou,country)}
 
 
 getPeriods<-function() {

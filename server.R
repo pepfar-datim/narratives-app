@@ -13,17 +13,23 @@ require(config)
 require(purrr)
 require(praise)
 require(scales)
+require(plyr)
+require(doMC)
 require(rpivotTable)
+require(waiter)
 
 source("./utils.R")
 
 shinyServer(function(input, output, session) {
+  
+  w <- Waiter$new()
   
   ready <- reactiveValues(ok = FALSE)
   
   user_input <- reactiveValues(authenticated = FALSE, 
                                status = "",
                                user_operating_units=NA,
+                               operating_units_dropdown=NA,
                                user_mechs=NA,
                                mech_dropdown = NA)
   
@@ -44,10 +50,15 @@ shinyServer(function(input, output, session) {
     is_logged_in <- FALSE
     user_input$authenticated <- DHISLogin(input$server, input$user_name, input$password)
     if (user_input$authenticated) {
+
+      w$show()
+      
       #user_input$user_orgunit<-getOption("organisationUnit")
       flog.info(paste0("User ", input$user_name, " logged in."), name = "datapack")
-      user_input$user_operating_units<- getUserOperatingUnits(getOption("organisationUnit")) %>% 
-        dplyr::select(name,id) %>% 
+      user_input$user_operating_units <- getOperatingUnits() 
+      
+      user_input$operating_units_dropdown <- user_input$user_operating_units %>% 
+        dplyr::select(ou,ou_id) %>% 
         tibble::deframe()
       
       user_input$user_mechs<-getUserMechanisms() 
@@ -58,6 +69,8 @@ shinyServer(function(input, output, session) {
       
       flog.info(paste0("User operating unit is ", getOption("organisationUnit")))
 
+      w$hide()
+      
     } else {
       sendSweetAlert(
         session,
@@ -74,6 +87,7 @@ shinyServer(function(input, output, session) {
     if (user_input$authenticated == FALSE) {
       ##### UI code for login page
       fluidPage(
+        use_waiter(),
         fluidRow(
           column(width = 2, offset = 5,
                  br(), br(), br(), br(),
@@ -91,6 +105,7 @@ shinyServer(function(input, output, session) {
                              top: 10%;
                              left: 33%;
                              right: 33%;}")),
+        use_waiter(),
         sidebarLayout(
           sidebarPanel(
             shinyjs::useShinyjs(),
@@ -98,7 +113,7 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             selectInput(inputId = "ou", 
                         label= "Operating Unit",
-                        user_input$user_operating_units),
+                        user_input$operating_units_dropdown),
             tags$hr(),
             selectInput(inputId = "fiscal_year", 
                         label= "Fiscal Year",
@@ -111,10 +126,11 @@ shinyServer(function(input, output, session) {
             selectInput(inputId = "mechs", 
                         label= "Mechanisms",
                         user_input$mech_dropdown ),
-            actionButton("fetch","Fetch"),
-            radioButtons('format', 'Document format', c('PDF', 'XLSX'),
-                         inline = TRUE),
-            downloadButton('downloadReport')
+            tags$hr(),
+            actionButton("fetch","Get Narratives"),
+            tags$hr(),
+            disabled(downloadButton('downloadReport',"Download PDF")),
+            disabled(downloadButton('downloadXLSX','Download XLSX'))
           ),
           mainPanel(tabsetPanel(
             id = "main-panel",
@@ -147,10 +163,20 @@ shinyServer(function(input, output, session) {
   #Outputs 
   output$narratives <- DT::renderDataTable({
     
-    vr<-narrative_results()
+    vr<-narrative_results()  
+
     
     if (!inherits(vr,"error") & !is.null(vr)){
-      vr
+      vr %>% 
+        dplyr::select("Operating unit"  = ou,
+                      "Country" = country,
+                      "Mechanism" = mech_code,
+                      "Agency" = agency_name,
+                      "Partner" = partner_name,
+                      "Technical area" = `Data`,
+                      "Narrative" = `Value`) %>%
+        dplyr::arrange(Partner,Mechanism,`Technical area`)
+        
     } else {
       NULL
     }
@@ -160,9 +186,7 @@ shinyServer(function(input, output, session) {
   output$downloadReport <- downloadHandler(
     filename = function() {
       
-      paste('my-report', sep = '.', switch(
-        input$format, PDF = 'pdf', XLSX = 'xlsx'
-      ))
+      paste('narrative-report', '.', 'pdf')
     },
     
     content = function(file) {
@@ -177,40 +201,74 @@ shinyServer(function(input, output, session) {
       file.copy(src, 'report.Rmd', overwrite = TRUE)
       
       library(rmarkdown)
-      out <- render('report.Rmd', switch(
-        input$format,
-        PDF = pdf_document(latex_engine = "xelatex"), HTML = html_document(), Word = word_document()
-      ))
+      out <- rmarkdown::render('report.Rmd', pdf_document(latex_engine = "xelatex"))
       file.rename(out, file)
     }
   )
   
   
-  fetch<-function() {
+  output$downloadXLSX <- downloadHandler(
+    filename = function() {
+      
+      paste0('narrative-report', '.', 'xlsx')
+    },
     
+    content = function(file) {
+      vr<-narrative_results() %>% 
+        dplyr::select("Operating unit"  = ou,
+                      "Country" = country,
+                      "Mechanism" = mech_code,
+                      "Agency" = agency_name,
+                      "Partner" = partner_name,
+                      "Technical area" = `Data`,
+                      "Narrative" = `Value`) %>%
+        dplyr::arrange(Country,Partner,Mechanism,`Technical area`)
+      openxlsx::write.xlsx(vr, file = file)
+    }
+  )
+  
+  fetch<-function() {
     
     if (!ready$ok) {
       return(NULL)
     } else {
       
+      countries<-dplyr::filter(user_input$user_operating_units
+                               ,ou_id == input$ou) %>% 
+                 dplyr::pull(country_id)
 
-      url <- assemblePartnerNarrativeURL(ou = input$ou, 
+      url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = input$fiscal_year,
                                          fiscal_quarter = input$fiscal_quarter)
       
+  
+      is_parallel<-FALSE
+      if (length(url) > 1) {
+        is_parallel <- TRUE
+        ncores <- parallel::detectCores() -1
+        doMC::registerDoMC(cores = ncores)
+      }
+
+      d <- llply(url,d2_analyticsResponse, .parallel = is_parallel)
+      d<-setNames(d,countries)
+      d_is_not_null<-lapply(d,function(x) !is.null(x) ) %>% unlist()
+      d<-d[d_is_not_null]
+      #Enable the button and return the data
       
-      d <- d2_analyticsResponse(url) %>%
-        dplyr::arrange(`Funding Mechanism`) %>%
-        dplyr::arrange(`Data`) %>%
-        dplyr::mutate(mech_code =  {
-          stringr::str_split(`Funding Mechanism`, " - ") %>%
-            map(., purrr::pluck(2)) %>% 
-            unlist()
-        } ) %>% 
-          dplyr::left_join(user_input$user_mechs, by = "mech_code")
-      return(d)
+      d<-tibble::enframe(d) %>% 
+        tidyr::unnest(cols=c(value)) %>% 
+        dplyr::rename(country_id = name) %>% 
+        dplyr::inner_join(user_input$user_operating_units,by="country_id") %>% 
+      dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
+                 map(.,purrr::pluck(2)) %>% 
+                 unlist() ) ) %>% 
+        dplyr::left_join(user_input$user_mechs, by = "mech_code")
+      shinyjs::enable("downloadReport")
+      shinyjs::enable("downloadXLSX")
+      shinyjs::enable("fetch")
     } 
     
+    d
   }
   
   narrative_results <- reactive({ fetch() })
