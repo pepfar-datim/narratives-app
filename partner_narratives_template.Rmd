@@ -60,9 +60,9 @@ cat('\n\n')
 
 country_data<-partner_data %>% 
     dplyr::filter(country == unique_countries[x]) %>% 
-    dplyr::arrange(`Data`)
+    dplyr::arrange(agency_name,mech_code,`Data`)
   
-unique_mechs<-unique(country_data$mech_code)
+unique_mechs<-unique(sort(country_data$mech_code))
 
 cat(paste0("Total number of partner narratives: ", NROW(country_data)))
 cat('\n\n')

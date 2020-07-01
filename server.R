@@ -28,10 +28,15 @@ shinyServer(function(input, output, session) {
   
   user_input <- reactiveValues(authenticated = FALSE, 
                                status = "",
+                               fiscal_year = getCurrentFiscalYear(),
+                               fiscal_quarter = getCurrentFiscalQuarter(),
                                user_operating_units=NA,
                                operating_units_dropdown=NA,
                                user_mechs=NA,
-                               mech_dropdown = NA)
+                               mech_dropdown = NA,
+                               partner_data_elements=NA,
+                               selected_data_elements = NULL,
+                               selected_mechanisms = NULL)
   
   observeEvent(input$fetch, {
     shinyjs::disable("fetch")
@@ -44,7 +49,25 @@ shinyServer(function(input, output, session) {
     ready$ok<-FALSE
   })
   
- 
+  observeEvent(input$fiscal_year, {
+    user_input$fiscal_year <-input$fiscal_year
+  })
+  
+  observeEvent(input$fiscal_quarter, {
+    user_input$fiscal_quarter <- input$fiscal_quarter
+  })
+  
+  observeEvent(input$mechs, {
+    user_input$selected_mechs <-input$mechs
+    print(user_input$selected_mechs)
+  })
+  
+  
+  observeEvent(input$des, {
+    user_input$selected_data_elements <-input$des
+    print("Data elements which are selected: ")
+    print(user_input$selected_data_elements)
+  })
   
   observeEvent(input$login_button, {
     is_logged_in <- FALSE
@@ -66,6 +89,10 @@ shinyServer(function(input, output, session) {
       user_input$mech_dropdown <- user_input$user_mechs %>% 
         dplyr::select(mech_code,categoryoptioncomboid) %>% 
         tibble::deframe()
+      
+      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year) %>% 
+        dplyr::select(shortName,id)
+        
       
       flog.info(paste0("User operating unit is ", getOption("organisationUnit")))
 
@@ -123,13 +150,18 @@ shinyServer(function(input, output, session) {
                         label= "Fiscal Quarter",
                         c(1,2,3,4)),
             tags$hr(),
-            selectInput(inputId = "mechs", 
+            selectizeInput(inputId = "mechs", 
                         label= "Mechanisms",
-                        user_input$mech_dropdown ),
+                        user_input$mech_dropdown, 
+                        multiple = TRUE),
             tags$hr(),
+            selectizeInput(inputId = "des",
+                        label = "Data elements",
+                        choices = tibble::deframe(user_input$partner_data_elements), 
+                        multiple = TRUE),
             actionButton("fetch","Get Narratives"),
             tags$hr(),
-            disabled(downloadButton('downloadReport',"Download PDF")),
+            disabled(downloadButton('downloadReport',"Downloa d PDF")),
             disabled(downloadButton('downloadXLSX','Download XLSX'))
           ),
           mainPanel(tabsetPanel(
@@ -150,7 +182,7 @@ shinyServer(function(input, output, session) {
     
     wellPanel(fluidRow(
       img(src='pepfar.png', align = "center"),
-      h4("Welcome to the Combined Narratives App. Please login with your DATIM credentials:")
+      h4("Welcome to the Results Narratives App. Please login with your DATIM credentials:")
     ),
     fluidRow(
       textInput("user_name", "Username: ",width = "600px"),
@@ -237,18 +269,25 @@ shinyServer(function(input, output, session) {
                                ,ou_id == input$ou) %>% 
                  dplyr::pull(country_id)
 
+      selected_des<-ifelse(is.null(input$des),
+                           user_input$partner_data_elements$id,
+                           input$des)
+      print("Selected des are")
+      print(selected_des)
+      print("Selcted mechs are")
+      print(user_input$selected_mechs)
       url <- assemblePartnerNarrativeURL(ou = countries, 
-                                         fiscal_year = input$fiscal_year,
-                                         fiscal_quarter = input$fiscal_quarter)
-      
-  
+                                         fiscal_year = user_input$fiscal_year,
+                                         fiscal_quarter = user_input$fiscal_quarter,
+                                         des = selected_des,
+                                         selected_mechs = user_input$selected_mechs)
       is_parallel<-FALSE
       if (length(url) > 1) {
         is_parallel <- TRUE
         ncores <- parallel::detectCores() -1
         doMC::registerDoMC(cores = ncores)
       }
-
+      print(url)
       d <- llply(url,d2_analyticsResponse, .parallel = is_parallel)
       d<-setNames(d,countries)
       d_is_not_null<-lapply(d,function(x) !is.null(x) ) %>% unlist()

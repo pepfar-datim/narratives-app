@@ -65,7 +65,8 @@ getPeriods<-function() {
 
 getNarrativeDataElements<-function(fiscal_year) {
   
-   paste0(getOption("baseurl"),"api/dataElementGroups?filter=name:like:Narratives&paging=false&fields=id,name,dataElements[id") %>% 
+  
+   paste0(getOption("baseurl"),"api/dataElementGroups?filter=name:like:Narratives&paging=false&fields=id,name,dataElements[id,shortName]") %>% 
     httr::GET() %>% httr::content("text") %>% jsonlite::fromJSON() %>% 
     purrr::pluck("dataElementGroups") %>% 
     mutate(year =   ( stringr::str_split(name," ") ) %>% purrr::map(purrr::pluck(1)) %>% unlist() ) %>% 
@@ -74,13 +75,33 @@ getNarrativeDataElements<-function(fiscal_year) {
     dplyr::arrange(year,type) %>% 
     dplyr::filter(type == "Results") %>% 
     dplyr::filter(year == fiscal_year) %>% 
-    dplyr::pull(dataElements) %>% 
+    purrr::pluck("dataElements") %>% 
     purrr::pluck(1) %>% 
-    dplyr::pull(id)
+    dplyr::arrange(shortName)
     
 }
 
 
+getCurrentFiscalYear<-function(this_date = Sys.Date()) {
+
+  if (lubridate::quarter(this_date) == 1) {
+    this_year<-lubridate::year(this_date) -1
+  } else {
+    this_year<-lubridate::year(this_date) 
+  }
+    this_year
+}
+
+
+getCurrentFiscalQuarter<-function(this_date = Sys.Date()) {
+  
+  if (lubridate::quarter(this_date) == 1) {
+    this_quarter<-4
+  } else {
+    this_year<-lubridate::quarter(this_date) 
+  }
+  this_year
+}
 
 convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
   
@@ -101,13 +122,20 @@ convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
   
 }
 
-assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter) {
+assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,des,selected_mechs) {
   
   this_period<-convertFYQuarterCalendarQuarter(fiscal_year , fiscal_quarter )
   base_url<-paste0(getOption("baseurl"),"api/analytics?")
-  mechanisms_bit<-paste0("dimension=SH885jaRe0o")
+  
+  if (is.null(selected_mechs)) {
+    mechanisms_bit<-paste0("dimension=SH885jaRe0o")
+  } else {
+    mechanisms_bit<-paste0("dimension=SH885jaRe0o:",paste(selected_mechs,sep="",collapse=";"))
+    print("Mechanisms bit")
+    print(mechanisms_bit)
+  }
+  
   period_bit<-paste0("&filter=pe:", this_period)
-  des<-getNarrativeDataElements(fiscal_year)
   de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
   ou_bit<-paste0("&filter=ou:", ou)
   end_bit<-"&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
@@ -169,7 +197,8 @@ getUserMechanisms<-function() {
 
 
 d2_analyticsResponse <- function(url,remapCols=TRUE) {
-
+print("About to get:")
+  print(url)
   d<-url %>% 
     httr::GET(.) %>% 
     httr::content(.,"text") %>% 
