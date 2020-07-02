@@ -24,10 +24,10 @@ shinyServer(function(input, output, session) {
   
   w <- Waiter$new()
   
-  ready <- reactiveValues(ok = FALSE)
+  ready <- reactiveValues(ok = FALSE,
+                          needs_refresh = TRUE)
   
   user_input <- reactiveValues(authenticated = FALSE, 
-                               status = "",
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
                                user_operating_units=NA,
@@ -35,18 +35,24 @@ shinyServer(function(input, output, session) {
                                user_mechs=NA,
                                mech_dropdown = NA,
                                partner_data_elements=NA,
+                               data_elements_dropdown=NULL,
                                selected_data_elements = NULL,
-                               selected_mechanisms = NULL)
+                               selected_mechanisms = NULL,
+                               has_des_filter = FALSE)
   
   observeEvent(input$fetch, {
-    shinyjs::disable("fetch")
     ready$ok <- TRUE
+    ready$needs_refresh <- TRUE
   })  
   
   observeEvent(input$reset_input, {
     shinyjs::reset("side-panel")
+    shinyjs::reset("des")
+    shinyjs::reset("mechs")
+    shinyjs::reset("fiscal_year")
+    shinyjs::reset("ou")
     shinyjs::disable("fetch")
-    ready$ok<-FALSE
+
   })
   
   observeEvent(input$fiscal_year, {
@@ -64,6 +70,7 @@ shinyServer(function(input, output, session) {
   
   
   observeEvent(input$des, {
+    user_input$has_des_filter<-TRUE
     user_input$selected_data_elements <-input$des
     print("Data elements which are selected: ")
     print(user_input$selected_data_elements)
@@ -90,8 +97,11 @@ shinyServer(function(input, output, session) {
         dplyr::select(mech_code,categoryoptioncomboid) %>% 
         tibble::deframe()
       
-      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year) %>% 
-        dplyr::select(shortName,id)
+      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year)
+      
+      user_input$data_elements_dropdown <- user_input$partner_data_elements %>% 
+        dplyr::select(shortName,id) %>% 
+        tibble::deframe()
         
       
       flog.info(paste0("User operating unit is ", getOption("organisationUnit")))
@@ -152,16 +162,22 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             selectizeInput(inputId = "mechs", 
                         label= "Mechanisms",
-                        user_input$mech_dropdown, 
-                        multiple = TRUE),
+                        choices = user_input$mech_dropdown,
+                        multiple = TRUE,
+                        selected = NULL,
+                        options = list(placeholder = 'Select one or more mechanisms:')),
             tags$hr(),
             selectizeInput(inputId = "des",
                         label = "Data elements",
-                        choices = tibble::deframe(user_input$partner_data_elements), 
-                        multiple = TRUE),
+                        choices = user_input$data_elements_dropdown,
+                        multiple = TRUE,
+                        selected = NULL,
+                        options = list(placeholder = 'Select one or more narratives:')),
             actionButton("fetch","Get Narratives"),
             tags$hr(),
-            disabled(downloadButton('downloadReport',"Downloa d PDF")),
+            actionButton("reset-input","Reset choices"),
+            tags$hr(),
+            disabled(downloadButton('downloadReport',"Download PDF")),
             disabled(downloadButton('downloadXLSX','Download XLSX'))
           ),
           mainPanel(tabsetPanel(
@@ -268,31 +284,45 @@ shinyServer(function(input, output, session) {
       countries<-dplyr::filter(user_input$user_operating_units
                                ,ou_id == input$ou) %>% 
                  dplyr::pull(country_id)
-
-      selected_des<-ifelse(is.null(input$des),
-                           user_input$partner_data_elements$id,
-                           input$des)
-      print("Selected des are")
-      print(selected_des)
-      print("Selcted mechs are")
-      print(user_input$selected_mechs)
+      
+      
       url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = user_input$fiscal_year,
                                          fiscal_quarter = user_input$fiscal_quarter,
-                                         des = selected_des,
-                                         selected_mechs = user_input$selected_mechs)
+                                         selected_des = input$des,
+                                         all_des = user_input$partner_data_elements$id)
       is_parallel<-FALSE
       if (length(url) > 1) {
         is_parallel <- TRUE
         ncores <- parallel::detectCores() -1
         doMC::registerDoMC(cores = ncores)
       }
-      print(url)
+
       d <- llply(url,d2_analyticsResponse, .parallel = is_parallel)
       d<-setNames(d,countries)
       d_is_not_null<-lapply(d,function(x) !is.null(x) ) %>% unlist()
       d<-d[d_is_not_null]
+      
       #Enable the button and return the data
+      
+      if (NROW(d) == 0 ) {
+        
+        
+        shinyjs::disable("downloadReport")
+        shinyjs::disable("downloadXLSX")
+        shinyjs::enable("fetch")
+        
+        return(tibble::tibble(
+          "ou",
+          "country",
+          "mech_code",
+          "agency_name",
+          "partner_name",
+          'Data',
+          'Value'
+        ))
+        ready$needs_refresh <- FALSE
+      }
       
       d<-tibble::enframe(d) %>% 
         tidyr::unnest(cols=c(value)) %>% 
@@ -302,6 +332,12 @@ shinyServer(function(input, output, session) {
                  map(.,purrr::pluck(2)) %>% 
                  unlist() ) ) %>% 
         dplyr::left_join(user_input$user_mechs, by = "mech_code")
+      
+      if (!is.null(input$mechs)) {
+        d<- d %>% dplyr::filter(categoryoptioncomboid %in% input$mechs)
+      }
+      
+      ready$needs_refresh <- FALSE
       shinyjs::enable("downloadReport")
       shinyjs::enable("downloadXLSX")
       shinyjs::enable("fetch")

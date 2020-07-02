@@ -122,20 +122,19 @@ convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
   
 }
 
-assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,des,selected_mechs) {
+assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,selected_des,all_des) {
   
   this_period<-convertFYQuarterCalendarQuarter(fiscal_year , fiscal_quarter )
   base_url<-paste0(getOption("baseurl"),"api/analytics?")
   
-  if (is.null(selected_mechs)) {
-    mechanisms_bit<-paste0("dimension=SH885jaRe0o")
-  } else {
-    mechanisms_bit<-paste0("dimension=SH885jaRe0o:",paste(selected_mechs,sep="",collapse=";"))
-    print("Mechanisms bit")
-    print(mechanisms_bit)
-  }
-  
+  mechanisms_bit<-paste0("dimension=SH885jaRe0o")
+
   period_bit<-paste0("&filter=pe:", this_period)
+  if(is.null(selected_des)) {
+    des<-all_des
+  } else {
+    des<-selected_des
+  }
   de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
   ou_bit<-paste0("&filter=ou:", ou)
   end_bit<-"&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
