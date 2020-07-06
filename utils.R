@@ -63,6 +63,21 @@ getPeriods<-function() {
 }
 
 
+getUSGNarrativeDataElements<-function() {
+  
+  
+  paste0(getOption("baseurl"),"api/dataSets/wkdCW3M4zYT?fields=id,dataSetElements,organisationUnits") %>% 
+    URLencode(.) %>% 
+    httr::GET(.) %>% 
+    httr::content(.,"text") %>% 
+    jsonlite::fromJSON(.) %>% 
+    purrr::pluck("dataSetElements") %>% 
+    purrr::pluck("dataElement")
+  
+  
+  
+}
+
 getNarrativeDataElements<-function(fiscal_year) {
   
   
@@ -139,6 +154,20 @@ assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,selected_des
   ou_bit<-paste0("&filter=ou:", ou)
   end_bit<-"&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
   paste0(base_url,mechanisms_bit,de_bit,ou_bit,period_bit,end_bit)
+  
+}
+
+
+assembleUSGNarrativeURL<-function(ou,period) {
+  
+  
+  base_url<-paste0(getOption("baseurl"),"api/analytics?")
+  period_bit<-paste0("&filter=pe:", period)
+  des<-getUSGNarrativeDataElements() %>% unlist()
+  de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
+  ou_bit<-paste0("&filter=ou:", ou)
+  end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false"
+  paste0(base_url,de_bit,ou_bit,period_bit,end_bit)
   
 }
 

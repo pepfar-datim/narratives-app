@@ -3,16 +3,16 @@ title: "MER Results Narratives FY2020Q2 "
 date: "`r paste0('Generated on ' , format(Sys.time(), '%Y-%m-%d'))`"
 output:
   pdf_document:
-    toc: yes
+    toc: no
     latex_engine: xelatex
 header-includes:
     - \usepackage{fancyhdr}
 ---
 
-<!-- \addtolength{\headheight}{1.0cm} -->
-<!-- \pagestyle{fancyplain} -->
-<!-- \rhead{\includegraphics[height=1.2cm]{/home/jason/development/Global/src/R/partnerNarratives/pepfar.png}} -->
-<!-- \renewcommand{\headrulewidth}{0pt}  -->
+\addtolength{\headheight}{1.0cm}
+\pagestyle{fancyplain}
+\rhead{\includegraphics[height=1.2cm]{/home/jason/development/Global/src/R/partnerNarratives/pepfar.png}}
+\renewcommand{\headrulewidth}{0pt}
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -20,7 +20,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r header ,results='asis', echo=FALSE}
 
-partner_data<-narrative_results()
+
+if (is.null(partner_data)) {
+  partner_data<-narrative_results()
+}
 
 if (!is.null(partner_data)) {
 cat('# Partner Narratives')
@@ -110,9 +113,15 @@ for (k in 1:NROW(mech_data)) {
 
 
 ```{r usg_body ,results='asis', echo=FALSE}
-usg_data<-NULL
+
+
 if (!is.null(usg_data)) {
   
+  
+ usg_data$Value<-cleanText(usg_data$Value)
+#Deal specially with bullets
+usg_data$Value<-gsub("•"," \\\\hfill \\\\break  •",usg_data$Value)
+
 cat("# USG Narratives")
 cat('\n\n')
 cat(paste0("**Operating Unit: ",partner_data$ou[1]),"**")
@@ -131,11 +140,7 @@ cat('\n\n')
 for (k in 1:NROW(country_data)) {
  cat(paste0("**",country_data$`Data`[k],"**"))
  cat('\n\n')
- this_narrative<-country_data$Value[k] %>% 
-   stringr::str_replace("\n","\n\n") %>% 
-   stringr::str_replace("\\\\","\\") %>% 
-   stringr::str_replace("%","%") %>% 
-   stringr::str_replace("\\$","USD")
+ this_narrative<-country_data$Value[k]
  cat(paste0(this_narrative))
 cat('\n\n')
 }  

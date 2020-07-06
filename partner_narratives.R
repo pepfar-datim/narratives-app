@@ -207,90 +207,90 @@ sentimentTable<-function(partner_data) {
 #Loop through by OU
 
 
-# datimvalidation::loadSecrets("/home/jason/.secrets/datim-prod.json")
-# setwd("/home/jason/development/narratives-app/")
-# config <- config::get()
-# options("baseurl" = config$baseurl)
-# 
-# 
-# operating_units<-getOperatingUnits(config)
-# all_mechs<-getAllMechanisms(operating_units) 
-# original_wd<-config$deploy_location
-# 
-# ous_unique<-unique(operating_units$ou_id)
-# 
-# for ( i in 1:length(ous_unique)) {
-#   
-#   this_ou<-ous_unique[i]
-#   selected_countries <- operating_units[operating_units$ou_id == this_ou,]
-#   print(paste("Making report for ",selected_countries[1,"ou"]))
-#   
-#   this_period<-"2020Q1"
-#   
-#   ou_mechs<-all_mechs %>% 
-#     dplyr::filter(ou_id == this_ou) 
-#   
-#   if ( NROW(ou_mechs) > 1 ) {
-#   
-#     this_url<-assemblePartnerNarrativeURL(ou = selected_countries$country_id,
-#                                           selected_mechs = ou_mechs$uid,
-#                                           period = this_period) %>% 
-#       stringr::str_remove_all(.,"\n") 
-#     
-#     partner_data<-list()
-#     for (j in 1:NROW(selected_countries)) {
-#       
-#       this_data<-d2_analyticsResponse(this_url[j])
-#       if ( NROW(this_data) > 0) {
-#         this_data$country<-selected_countries$country[j]
-#         partner_data[[j]]<-this_data
-#       
-#       } else {
-#       partner_data[[j]]<-NULL
-#       }
-#     }
-#     
-#     if (!is.null(partner_data)) {
-#       partner_data<-do.call(rbind.data.frame,partner_data)
-#       mech_codes<-stringr::str_split(partner_data$`Funding Mechanism`," - ") %>% 
-#         map(.,purrr::pluck(2)) %>% 
-#         unlist()
-#       
-#       partner_data$code<-mech_codes
-#       
-#       partner_data %<>% dplyr::inner_join(all_mechs,by="code") %>% 
-#         dplyr::arrange(country,code)
-#     }
-# 
-#     
-#     #USG Narratives
-#     
-#     this_url<-assembleUSGNarrativeURL(ou = selected_countries$country_id,
-#                                       period = this_period,config)
-#   
-#     usg_data<-list()
-#     for (j in 1:NROW(selected_countries)) {
-#       this_data<-d2_analyticsResponse(this_url[j])
-#       if ( NROW(this_data) > 0) {
-#         
-#         this_data$country<-selected_countries$country[j]
-#         usg_data[[j]]<-this_data
-#         
-#       } else {
-#         usg_data[[j]]<-NULL
-#       }
-#     }
-#     
-#     usg_data<-do.call(rbind.data.frame,usg_data)
-#     
-#       tryCatch(rmarkdown::render(
-#         paste0(original_wd, "/partner_narratives_template.Rmd"),
-#         output_file = paste0(original_wd, "/",this_period,"/", operating_units[operating_units$ou_id == this_ou,"ou"][[1]], ".pdf")
-#       ),
-#       error = function(e) {
-#         print(paste("Could not render report for ", operating_units[operating_units$ou_id == this_ou,"ou"][[1]]))
-#       } )
-#     
-#   
-#   }
-# }
+ datimvalidation::loadSecrets("/home/jason/.secrets/datim-prod.json")
+ setwd("/home/jason/development/narratives-app/")
+ config <- config::get()
+ options("baseurl" = config$baseurl)
+
+
+ operating_units<-getOperatingUnits(config)
+ all_mechs<-getAllMechanisms(operating_units)
+ original_wd<-config$deploy_location
+
+ ous_unique<-unique(operating_units$ou_id)
+
+ for ( i in 1:length(ous_unique)) {
+
+ this_ou<-ous_unique[i]
+   selected_countries <- operating_units[operating_units$ou_id == this_ou,]
+   print(paste("Making report for ",selected_countries[1,"ou"]))
+
+   this_period<-"2020Q1"
+
+   ou_mechs<-all_mechs %>%
+     dplyr::filter(ou_id == this_ou)
+
+   if ( NROW(ou_mechs) > 1 ) {
+
+     this_url<-assemblePartnerNarrativeURL(ou = selected_countries$country_id,
+                                           selected_mechs = ou_mechs$uid,
+                                         period = this_period) %>%
+       stringr::str_remove_all(.,"\n")
+
+     partner_data<-list()
+     for (j in 1:NROW(selected_countries)) {
+
+       this_data<-d2_analyticsResponse(this_url[j])
+       if ( NROW(this_data) > 0) {
+         this_data$country<-selected_countries$country[j]
+         partner_data[[j]]<-this_data
+
+       } else {
+       partner_data[[j]]<-NULL
+       }
+     }
+
+     if (!is.null(partner_data)) {
+       partner_data<-do.call(rbind.data.frame,partner_data)
+       mech_codes<-stringr::str_split(partner_data$`Funding Mechanism`," - ") %>%
+         map(.,purrr::pluck(2)) %>%
+         unlist()
+
+       partner_data$code<-mech_codes
+
+       partner_data %<>% dplyr::inner_join(all_mechs,by="code") %>%
+         dplyr::arrange(country,code)
+     }
+
+
+     #USG Narratives
+
+     this_url<-assembleUSGNarrativeURL(ou = selected_countries$country_id,
+                                       period = this_period,config)
+
+     usg_data<-list()
+     for (j in 1:NROW(selected_countries)) {
+       this_data<-d2_analyticsResponse(this_url[j])
+       if ( NROW(this_data) > 0) {
+
+         this_data$country<-selected_countries$country[j]
+         usg_data[[j]]<-this_data
+
+       } else {
+         usg_data[[j]]<-NULL
+       }
+     }
+
+     usg_data<-do.call(rbind.data.frame,usg_data)
+
+       tryCatch(rmarkdown::render(
+         paste0(original_wd, "/partner_narratives_template.Rmd"),
+         output_file = paste0(original_wd, "/",this_period,"/", operating_units[operating_units$ou_id == this_ou,"ou"][[1]], ".pdf")
+       ),
+       error = function(e) {
+         print(paste("Could not render report for ", operating_units[operating_units$ou_id == this_ou,"ou"][[1]]))
+       } )
+
+
+   }
+ }
