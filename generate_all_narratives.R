@@ -20,7 +20,7 @@ des_usg<-getUSGNarrativeDataElements()
 
 ous_unique<-ous %>%  dplyr::select(ou,ou_id) %>% dplyr::distinct()
 
-for (i in 1:NROW(ous_unique)) {
+for (i in 24:NROW(ous_unique)) {
   
   countries<-dplyr::filter(ous,ou_id == ous_unique$ou_id[i]) 
   
