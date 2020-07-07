@@ -333,11 +333,11 @@ shinyServer(function(input, output, session) {
                                          fiscal_quarter = user_input$fiscal_quarter,
                                          all_des = user_input$partner_data_elements$de_uid)
       is_parallel<-FALSE
-      if (length(url) > 1) {
-        is_parallel <- TRUE
-        ncores <- parallel::detectCores() -1
-        doMC::registerDoMC(cores = ncores)
-      }
+      # if (length(url) > 1) {
+      #   is_parallel <- TRUE
+      #   ncores <- parallel::detectCores() -1
+      #   doMC::registerDoMC(cores = ncores)
+      # }
 
       d <- llply(url,d2_analyticsResponse, .parallel = is_parallel)
       d<-setNames(d,countries)
