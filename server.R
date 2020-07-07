@@ -243,7 +243,9 @@ shinyServer(function(input, output, session) {
       print("VR is null!!!  ")
       NULL
     }
-  })
+  },options=list(
+    bFilter=0,
+    bInfo=0 ))
   
   
   output$downloadReport <- downloadHandler(
