@@ -258,7 +258,7 @@ shinyServer(function(input, output, session) {
   output$downloadReport <- downloadHandler(
     filename = function() {
       
-      paste('narrative-report', '.', 'pdf')
+      paste0('narrative-report', '.', 'pdf')
     },
     
     content = function(file) {
