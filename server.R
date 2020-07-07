@@ -168,7 +168,7 @@ shinyServer(function(input, output, session) {
                         options = list(placeholder = 'Select one or more mechanisms:')),
             tags$hr(),
             selectizeInput(inputId = "des",
-                        label = "Data elements",
+                        label = "Technical areas",
                         choices = user_input$data_elements_dropdown,
                         multiple = TRUE,
                         selected = NULL,
