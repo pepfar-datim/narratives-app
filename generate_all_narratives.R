@@ -27,8 +27,7 @@ for (i in 1:NROW(ous_unique)) {
   partner_url<-assemblePartnerNarrativeURL(ou = countries$country_id,
                               fiscal_year = fiscal_year,
                               fiscal_quarter = fiscal_quarter,
-                              selected_des = NULL,
-                              all_des = unique(des_partner$id))
+                              all_des = unique(des_partner$de_uid))
 
   
   is_parallel<-FALSE

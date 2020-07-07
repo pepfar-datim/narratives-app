@@ -22,7 +22,6 @@ source("./utils.R")
 
 shinyServer(function(input, output, session) {
   
-  w <- Waiter$new()
   
   ready <- reactiveValues(ok = FALSE,
                           needs_refresh = TRUE)
@@ -81,7 +80,8 @@ shinyServer(function(input, output, session) {
     user_input$authenticated <- DHISLogin(input$server, input$user_name, input$password)
     if (user_input$authenticated) {
 
-      w$show()
+      waiter_show(html = waiting_screen, color = "black")
+
       
       #user_input$user_orgunit<-getOption("organisationUnit")
       flog.info(paste0("User ", input$user_name, " logged in."), name = "datapack")
@@ -106,7 +106,7 @@ shinyServer(function(input, output, session) {
 
       flog.info(paste0("User operating unit is ", getOption("organisationUnit")))
 
-      w$hide()
+      waiter_hide()
       
     } else {
       sendSweetAlert(
@@ -173,6 +173,11 @@ shinyServer(function(input, output, session) {
                         multiple = TRUE,
                         selected = NULL,
                         options = list(placeholder = 'Select one or more narratives:')),
+            tags$hr(),
+            textInput(inputId = "free_text_filter",
+                               label = "Search:",
+                               placeholder = "Free text search including regex"),
+            tags$hr(),
             actionButton("fetch","Get Narratives"),
             tags$hr(),
             actionButton("reset-input","Reset choices"),
@@ -192,6 +197,11 @@ shinyServer(function(input, output, session) {
         ))
   }
 })
+  
+  waiting_screen <- tagList(
+    spin_solar(),
+    h4("Getting things set up. Please wait...")
+  ) 
   
 
   
@@ -344,8 +354,9 @@ shinyServer(function(input, output, session) {
         shinyjs::disable("downloadReport")
         shinyjs::disable("downloadXLSX")
         shinyjs::disable("downloadDocx")
-        shinyjs::enable("fetch")
         
+        shinyjs::enable("fetch")
+  
         return(tibble::tibble(
           "ou",
           "country",
@@ -371,6 +382,7 @@ shinyServer(function(input, output, session) {
       dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
       
       ready$needs_refresh <- FALSE
+
       shinyjs::enable("downloadReport")
       shinyjs::enable("downloadXLSX")
       shinyjs::enable("downloadDocx")
@@ -394,6 +406,16 @@ shinyServer(function(input, output, session) {
     if (!is.null(input$mechs)) {
       d %<>% dplyr::filter(mech_code %in% input$mechs)
     }
+    
+    if (input$free_text_filter != "") {
+      row_filter<- d %>% dplyr::rowwise() %>% 
+        purrr::map_dfr(.,function(x) stringr::str_detect(x,input$free_text_filter)) %>% 
+        rowSums(.) %>% 
+        as.logical(.)
+      
+      d<-d[row_filter,]
+    
+      }
     
     d
     
