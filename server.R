@@ -245,7 +245,14 @@ shinyServer(function(input, output, session) {
     }
   },options=list(
     bFilter=0,
-    bInfo=0 ))
+    bInfo=0,
+    columnDefs = list(list(
+      targets = c(8),
+      render = JS(
+        "function(data, type, row, meta) {",
+        "return type === 'display' && data.length > 100 ?",
+        "'<span title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
+        "}")))))
   
   
   output$downloadReport <- downloadHandler(
