@@ -8,9 +8,9 @@ require(dplyr)
 source("./utils.R")
 
 fiscal_year<-2020
-fiscal_quarter<-1
+fiscal_quarter<-2
 
-loadSecrets("/home/jason/.secrets/datim-prod.json")
+loadSecrets("/home/jason/.secrets/datim.json")
 
 
 ous<-getOperatingUnits()
@@ -20,7 +20,7 @@ des_usg<-getUSGNarrativeDataElements()
 
 ous_unique<-ous %>%  dplyr::select(ou,ou_id) %>% dplyr::distinct()
 
-for (i in 24:NROW(ous_unique)) {
+for (i in 1:NROW(ous_unique)) {
   
   countries<-dplyr::filter(ous,ou_id == ous_unique$ou_id[i]) 
   
@@ -63,7 +63,8 @@ for (i in 24:NROW(ous_unique)) {
   
   
   usg_url<-assembleUSGNarrativeURL(ou = countries$country_id,
-                                    period = convertFYQuarterCalendarQuarter(fiscal_year,fiscal_quarter))
+                                    fiscal_year,
+                                   fiscal_quarter )
                                     
                                     
   usg_data<- llply(usg_url,d2_analyticsResponse, .parallel = is_parallel)

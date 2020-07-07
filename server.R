@@ -94,16 +94,16 @@ shinyServer(function(input, output, session) {
       user_input$user_mechs<-getUserMechanisms() 
       
       user_input$mech_dropdown <- user_input$user_mechs %>% 
-        dplyr::select(mech_code,categoryoptioncomboid) %>% 
-        tibble::deframe()
+        dplyr::select(mech_code) %>% 
+        dplyr::arrange(mech_code)
       
       user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year)
       
       user_input$data_elements_dropdown <- user_input$partner_data_elements %>% 
-        dplyr::select(shortName,id) %>% 
-        tibble::deframe()
-        
-      
+        dplyr::select(technical_area) %>% 
+        dplyr::distinct() %>% 
+        dplyr::arrange(technical_area)
+
       flog.info(paste0("User operating unit is ", getOption("organisationUnit")))
 
       w$hide()
@@ -178,7 +178,10 @@ shinyServer(function(input, output, session) {
             actionButton("reset-input","Reset choices"),
             tags$hr(),
             disabled(downloadButton('downloadReport',"Download PDF")),
-            disabled(downloadButton('downloadXLSX','Download XLSX'))
+            tags$hr(),
+            disabled(downloadButton('downloadXLSX','Download XLSX')),
+            tags$hr(),
+            disabled(downloadButton('downloadDocx','Download DOCX'))
           ),
           mainPanel(tabsetPanel(
             id = "main-panel",
@@ -211,7 +214,7 @@ shinyServer(function(input, output, session) {
   #Outputs 
   output$narratives <- DT::renderDataTable({
     
-    vr<-narrative_results()  
+    vr<-filtered_narratives()
 
     
     if (!inherits(vr,"error") & !is.null(vr)){
@@ -221,11 +224,13 @@ shinyServer(function(input, output, session) {
                       "Mechanism" = mech_code,
                       "Agency" = agency_name,
                       "Partner" = partner_name,
-                      "Technical area" = `Data`,
+                      "Technical area" = technical_area,
+                      "Support type" = support_type,
                       "Narrative" = `Value`) %>%
         dplyr::arrange(Partner,Mechanism,`Technical area`)
         
     } else {
+      print("VR is null!!!  ")
       NULL
     }
   })
@@ -241,15 +246,41 @@ shinyServer(function(input, output, session) {
       
       
       src <- normalizePath('partner_narratives_template.Rmd')
-      
+      img <- normalizePath('pepfar.png')
       # temporarily switch to the temp dir, in case you do not have write
       # permission to the current working directory
       owd <- setwd(tempdir())
       on.exit(setwd(owd))
       file.copy(src, 'report.Rmd', overwrite = TRUE)
+      file.copy(img, 'pepfar.png', overwrite = TRUE)
       
       library(rmarkdown)
       out <- rmarkdown::render('report.Rmd', pdf_document(latex_engine = "xelatex"))
+      file.rename(out, file)
+    }
+  )
+  
+  
+  output$downloadDocx <- downloadHandler(
+    filename = function() {
+      
+      paste0('narrative-report', '.', 'docx')
+    },
+    
+    content = function(file) {
+      
+      
+      src <- normalizePath('partner_narratives_template.Rmd')
+      img <- normalizePath('pepfar.png')
+      # temporarily switch to the temp dir, in case you do not have write
+      # permission to the current working directory
+      owd <- setwd(tempdir())
+      on.exit(setwd(owd))
+      file.copy(src, 'report.Rmd', overwrite = TRUE)
+      file.copy(img, 'pepfar.png', overwrite = TRUE)
+      
+      library(rmarkdown)
+      out <- rmarkdown::render('report.Rmd', word_document())
       file.rename(out, file)
     }
   )
@@ -262,13 +293,14 @@ shinyServer(function(input, output, session) {
     },
     
     content = function(file) {
-      vr<-narrative_results() %>% 
+      vr<-filtered_narratives() %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
                       "Mechanism" = mech_code,
                       "Agency" = agency_name,
                       "Partner" = partner_name,
-                      "Technical area" = `Data`,
+                      "Technical area" = technical_area,
+                      "Support type" = support_type,
                       "Narrative" = `Value`) %>%
         dplyr::arrange(Country,Partner,Mechanism,`Technical area`)
       openxlsx::write.xlsx(vr, file = file)
@@ -289,8 +321,7 @@ shinyServer(function(input, output, session) {
       url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = user_input$fiscal_year,
                                          fiscal_quarter = user_input$fiscal_quarter,
-                                         selected_des = input$des,
-                                         all_des = user_input$partner_data_elements$id)
+                                         all_des = user_input$partner_data_elements$de_uid)
       is_parallel<-FALSE
       if (length(url) > 1) {
         is_parallel <- TRUE
@@ -303,6 +334,8 @@ shinyServer(function(input, output, session) {
       d_is_not_null<-lapply(d,function(x) !is.null(x) ) %>% unlist()
       d<-d[d_is_not_null]
       
+     
+      
       #Enable the button and return the data
       
       if (NROW(d) == 0 ) {
@@ -310,6 +343,7 @@ shinyServer(function(input, output, session) {
         
         shinyjs::disable("downloadReport")
         shinyjs::disable("downloadXLSX")
+        shinyjs::disable("downloadDocx")
         shinyjs::enable("fetch")
         
         return(tibble::tibble(
@@ -319,6 +353,8 @@ shinyServer(function(input, output, session) {
           "agency_name",
           "partner_name",
           'Data',
+          'technical_area',
+          'support_type',
           'Value'
         ))
         ready$needs_refresh <- FALSE
@@ -331,15 +367,13 @@ shinyServer(function(input, output, session) {
       dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
                  map(.,purrr::pluck(2)) %>% 
                  unlist() ) ) %>% 
-        dplyr::left_join(user_input$user_mechs, by = "mech_code")
-      
-      if (!is.null(input$mechs)) {
-        d<- d %>% dplyr::filter(categoryoptioncomboid %in% input$mechs)
-      }
+        dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
+      dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
       
       ready$needs_refresh <- FALSE
       shinyjs::enable("downloadReport")
       shinyjs::enable("downloadXLSX")
+      shinyjs::enable("downloadDocx")
       shinyjs::enable("fetch")
     } 
     
@@ -347,5 +381,22 @@ shinyServer(function(input, output, session) {
   }
   
   narrative_results <- reactive({ fetch() })
+  
+  filtered_narratives <- reactive({
+    
+    d <- narrative_results ()
+
+    if (!is.null(input$des)) {
+      
+       d %<>% dplyr::filter(technical_area %in% input$des)
+     }
+    
+    if (!is.null(input$mechs)) {
+      d %<>% dplyr::filter(mech_code %in% input$mechs)
+    }
+    
+    d
+    
+  })
   
   })

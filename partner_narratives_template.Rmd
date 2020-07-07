@@ -11,7 +11,7 @@ header-includes:
 
 \addtolength{\headheight}{1.0cm}
 \pagestyle{fancyplain}
-\rhead{\includegraphics[height=1.2cm]{/home/jason/development/Global/src/R/partnerNarratives/pepfar.png}}
+\rhead{\includegraphics[height=1.2cm]{pepfar.png}}
 \renewcommand{\headrulewidth}{0pt}
 
 ```{r setup, include=FALSE}
@@ -21,8 +21,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r header ,results='asis', echo=FALSE}
 
 
-if (is.null(partner_data)) {
-  partner_data<-narrative_results()
+if ( !exists("partner_data") ) {
+  partner_data<-filtered_narratives()
 }
 
 if (!is.null(partner_data)) {
@@ -35,7 +35,7 @@ cat('\n\n')
 ```
 
 
-```{r partners ,results='asis', echo=FALSE}
+```{r partners ,results='asis', echo=FALSE, warning = FALSE}
 
 cleanText<-function (strings) 
 {
@@ -70,12 +70,20 @@ unique_mechs<-unique(sort(country_data$mech_code))
 cat(paste0("Total number of partner narratives: ", NROW(country_data)))
 cat('\n\n')
 
-covid_narratives<-country_data$Value %>% 
-  tolower(.) %>% 
-  stringr::str_detect(.,"covid") %>% 
+
+word_count<-country_data$Value %>% 
+  stringr::str_count(.,"\\S+") %>% 
   sum(.)
 
-cat(paste0("Narratives containing references to COVID: ", covid_narratives ))
+cat(paste0("Total number of words: ",word_count))
+cat('\n\n')
+
+covid_narratives<-country_data$Value %>% 
+  tolower(.) %>% 
+  stringr::str_detect(.,c("covid|corona|cov2")) %>% 
+  sum(.)
+
+cat(paste0("Number of references to COVID19: ", covid_narratives ))
 cat('\n\n')
 
 for ( y in seq_along(unique_mechs)) {
@@ -95,7 +103,7 @@ cat('\n\n')
 cat('\n\n') 
 
 for (k in 1:NROW(mech_data)) {
- cat(paste0("**",mech_data$`Data`[k],"**"))
+ cat(paste0("**",mech_data$technical_area[k]," (",mech_data$support_type[k],")**"))
  cat('\n\n')
  cat('\n\n')
  cat(mech_data$Value[k] %>% stringr::str_replace("\n","\n\n"))
@@ -112,10 +120,10 @@ for (k in 1:NROW(mech_data)) {
 ```
 
 
-```{r usg_body ,results='asis', echo=FALSE}
+```{r usg_body ,results='asis', echo=FALSE, message = FALSE}
 
 
-if (!is.null(usg_data)) {
+if (exists("usg_data")) {
   
   
  usg_data$Value<-cleanText(usg_data$Value)
