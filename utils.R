@@ -129,11 +129,13 @@ getCurrentFiscalYear<-function(this_date = Sys.Date()) {
 getCurrentFiscalQuarter<-function(this_date = Sys.Date()) {
   
   if (lubridate::quarter(this_date) == 1) {
-    this_quarter<-4
-  } else {
-    this_year<-lubridate::quarter(this_date) 
-  }
-  this_year
+    return(4) }
+
+    if ( lubridate::quarter(this_date) %in% c(2,3,4) ) {
+      lubridate::quarter(this_date) - 1
+    }
+  
+
 }
 
 convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
