@@ -164,7 +164,7 @@ assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des) {
 
   period_bit<-paste0("&filter=pe:", this_period)
   de_bit<-paste0("&dimension=dx:",paste(all_des,sep="",collapse=";"))
-  ou_bit<-paste0("&filter=ou:", ou)
+  ou_bit<-paste0("&dimension=ou:", paste(ou,sep="",collapse=";"))
   end_bit<-"&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
   paste0(base_url,mechanisms_bit,de_bit,ou_bit,period_bit,end_bit)
   

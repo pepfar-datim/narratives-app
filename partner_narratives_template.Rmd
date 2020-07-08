@@ -20,22 +20,32 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r header ,results='asis', echo=FALSE}
 
-
 if ( !exists("partner_data") ) {
-  partner_data<-filtered_narratives()
+  
+  partner_data<-filtered_narratives() 
+
+  
 }
 
 if (!is.null(partner_data)) {
+
 cat('# Partner Narratives')
 cat('\n\n')
+
+ou_data<-partner_data
+
+unique_ous<-dplyr::select(ou_data,ou) %>% 
+  dplyr::distinct() %>% 
+  dplyr::arrange(ou) %>% 
+  dplyr::pull(ou)
+
+for (a in 1:length(unique_ous)) {
+  
+partner_data<-dplyr::filter(ou_data,ou == unique_ous[a])
+  
 cat(paste0("**Operating Unit: ",partner_data$ou[1]),"**")
 cat('\n\n')
-}
 
-```
-
-
-```{r partners ,results='asis', echo=FALSE, warning = FALSE}
 
 cleanText<-function (strings) 
 {
@@ -116,6 +126,8 @@ for (k in 1:NROW(mech_data)) {
   cat('\n\n')  }
 }
 }
+  
+}}
 
 ```
 

@@ -29,6 +29,7 @@ shinyServer(function(input, output, session) {
   user_input <- reactiveValues(authenticated = FALSE, 
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
+                               is_global_user = FALSE,
                                user_operating_units=NA,
                                operating_units_dropdown=NA,
                                user_mechs=NA,
@@ -71,8 +72,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$des, {
     user_input$has_des_filter<-TRUE
     user_input$selected_data_elements <-input$des
-    print("Data elements which are selected: ")
-    print(user_input$selected_data_elements)
+
   })
   
   observeEvent(input$login_button, {
@@ -90,6 +90,8 @@ shinyServer(function(input, output, session) {
       user_input$operating_units_dropdown <- user_input$user_operating_units %>% 
         dplyr::select(ou,ou_id) %>% 
         tibble::deframe()
+      
+      user_input$is_global_user <- getOption("organisationUnit") == "ybg3MO3hcf4"
       
       user_input$user_mechs<-getUserMechanisms() 
       
@@ -150,11 +152,13 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             selectInput(inputId = "ou", 
                         label= "Operating Unit",
-                        user_input$operating_units_dropdown),
+                        user_input$operating_units_dropdown,
+                        multiple = TRUE,
+                        selected = NULL),
             tags$hr(),
             selectInput(inputId = "fiscal_year", 
                         label= "Fiscal Year",
-                        c("FY20"=2020,"FY19"=2019,"FY18"=2018,"FY17"=2017,"FY16"=2016)),
+                        c("FY20"=2020,"FY19"=2019,"FY18"=2018,",FY17"=2017,"FY16"=2016)),
             tags$hr(),
             selectInput(inputId = "fiscal_quarter", 
                         label= "Fiscal Quarter",
@@ -176,7 +180,7 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             textInput(inputId = "free_text_filter",
                                label = "Search:",
-                               placeholder = "Free text search including regex"),
+                               placeholder = "Free text search:"),
             tags$hr(),
             actionButton("fetch","Get Narratives"),
             tags$hr(),
@@ -227,7 +231,7 @@ shinyServer(function(input, output, session) {
     vr<-filtered_narratives()
 
     
-    if (!inherits(vr,"error") & !is.null(vr)){
+    if (!inherits(vr,"error") & !is.null(vr) & NROW(vr) > 0){
       vr %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
@@ -237,7 +241,7 @@ shinyServer(function(input, output, session) {
                       "Technical area" = technical_area,
                       "Support type" = support_type,
                       "Narrative" = `Value`) %>%
-        dplyr::arrange(Partner,Mechanism,`Technical area`)
+        dplyr::arrange(`Operating unit`,`Country`,Partner,Mechanism,`Technical area`)
         
     } else {
       print("VR is null!!!  ")
@@ -321,7 +325,7 @@ shinyServer(function(input, output, session) {
                       "Technical area" = technical_area,
                       "Support type" = support_type,
                       "Narrative" = `Value`) %>%
-        dplyr::arrange(Country,Partner,Mechanism,`Technical area`)
+        dplyr::arrange(`Operating unit`,Country,Partner,Mechanism,`Technical area`)
       openxlsx::write.xlsx(vr, file = file)
     }
   )
@@ -332,28 +336,39 @@ shinyServer(function(input, output, session) {
       return(NULL)
     } else {
       
-      countries<-dplyr::filter(user_input$user_operating_units
-                               ,ou_id == input$ou) %>% 
-                 dplyr::pull(country_id)
       
+      #Select all countries if none are explicitly selected
+      countries<-
+        if (is.null(input$ou)) {
+          user_input$user_operating_units %>% 
+            pull(country_id)
+        } else {
+          dplyr::filter(user_input$user_operating_units
+                        ,ou_id %in% input$ou) %>% 
+            dplyr::pull(country_id)
+        }
+        
+
+      
+      get_des<- function()
+        {
+            if ( is.null(input$des )) {return(user_input$partner_data_elements$de_uid)} else {
+              user_input$partner_data_elements %>% 
+                dplyr::filter(technical_area %in% input$des) %>% 
+                dplyr::pull(de_uid) %>% 
+                unique(.)
+            } }
+        
       
       url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = user_input$fiscal_year,
                                          fiscal_quarter = user_input$fiscal_quarter,
-                                         all_des = user_input$partner_data_elements$de_uid)
-      is_parallel<-FALSE
-      # if (length(url) > 1) {
-      #   is_parallel <- TRUE
-      #   ncores <- parallel::detectCores() -1
-      #   doMC::registerDoMC(cores = ncores)
-      # }
+                                         all_des = get_des())
 
-      d <- llply(url,d2_analyticsResponse, .parallel = is_parallel)
-      d<-setNames(d,countries)
-      d_is_not_null<-lapply(d,function(x) !is.null(x) ) %>% unlist()
-      d<-d[d_is_not_null]
+      d <- d2_analyticsResponse(url)
       
-     
+      
+      
       
       #Enable the button and return the data
       
@@ -380,10 +395,8 @@ shinyServer(function(input, output, session) {
         ready$needs_refresh <- FALSE
       }
       
-      d<-tibble::enframe(d) %>% 
-        tidyr::unnest(cols=c(value)) %>% 
-        dplyr::rename(country_id = name) %>% 
-        dplyr::inner_join(user_input$user_operating_units,by="country_id") %>% 
+      d<- d %>% dplyr::rename(country = `Organisation unit`) %>% 
+        dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
       dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
                  map(.,purrr::pluck(2)) %>% 
                  unlist() ) ) %>% 
@@ -401,11 +414,48 @@ shinyServer(function(input, output, session) {
     d
   }
   
-  narrative_results <- reactive({ fetch() })
+  narrative_results <- reactive({
+    
+    
+    if (input$fetch == 0)
+      
+      return()
+    
+    isolate({ 
+      
+    needs_des_filter<- function() {
+      
+      
+      if (is.null(input$ou) | length(input$ou) > 1 ) {
+      
+      if ( is.null(input$des) ) { return(TRUE)}
+      if ( length(input$des) == 1L ) {return(FALSE)}
+      
+    } else {
+      return(FALSE)
+    }}
+    
+    if (needs_des_filter()) {
+      sendSweetAlert(
+        session,
+        title = "Please add some filters",
+        text = "You have selected multiple operating units. Please select a single technical area.",
+        type = "error")
+      return(NULL)
+    }
+    
+ fetch()  })}
+    
+)
+  
   
   filtered_narratives <- reactive({
     
     d <- narrative_results ()
+    
+    if (is.null(d)) {
+      return()
+    }
 
     if (!is.null(input$des)) {
       
@@ -426,6 +476,7 @@ shinyServer(function(input, output, session) {
     
       }
     
+    print(names(d))
     d
     
   })
