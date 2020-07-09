@@ -240,7 +240,6 @@ shinyServer(function(input, output, session) {
     
     vr<-filtered_narratives()
 
-    
     if (!inherits(vr,"error") & !is.null(vr) & NROW(vr) > 0){
       vr %>% 
         dplyr::select("Operating unit"  = ou,
@@ -254,7 +253,7 @@ shinyServer(function(input, output, session) {
         dplyr::arrange(`Operating unit`,`Country`,Partner,Mechanism,`Technical area`)
         
     } else {
-      NULL
+      data.frame("Message" = "No rows found. Try a different combination of paramaters.")
     }
   },options=list(
     bFilter=0,
@@ -390,16 +389,16 @@ shinyServer(function(input, output, session) {
         
         shinyjs::enable("fetch")
   
-        return(tibble::tibble(
-          "ou",
-          "country",
-          "mech_code",
-          "agency_name",
-          "partner_name",
-          'Data',
-          'technical_area',
-          'support_type',
-          'Value'
+        return(data.frame(
+          "ou" = character(),
+          "country"= character(),
+          "mech_code"= character(),
+          "agency_name"= character(),
+          "partner_name"= character(),
+          'Data'= character(),
+          'technical_area'= character(),
+          'support_type'= character(),
+          'Value'= character()
         ))
         ready$needs_refresh <- FALSE
       }
@@ -426,19 +425,16 @@ shinyServer(function(input, output, session) {
   narrative_results <- reactive({
     
     
-    if (input$fetch == 0)
-      
-      return()
+    if (input$fetch == 0) { return() }
     
     isolate({ 
       
     needs_des_filter<- function() {
       
+      if ( is.null(input$ou) | length(input$ou) > 1 ) {
       
-      if (is.null(input$ou) | length(input$ou) > 1 ) {
-      
-      if ( is.null(input$des) ) { return(TRUE)}
-      if ( length(input$des) == 1L ) {return(FALSE)}
+      if ( is.null(input$des) ) { return(TRUE) }
+      if ( length(input$des) < 6 ) {return(FALSE)}
       
     } else {
       return(FALSE)
@@ -448,7 +444,7 @@ shinyServer(function(input, output, session) {
       sendSweetAlert(
         session,
         title = "Please add some filters",
-        text = "You have selected multiple operating units. Please select a single technical area.",
+        text = "You have selected multiple operating units. Please select between 1 and 5 technical areas.",
         type = "error")
       return(NULL)
     }
@@ -462,18 +458,10 @@ shinyServer(function(input, output, session) {
     
     d <- narrative_results ()
     
-    if (is.null(d)) {
+    if (is.null(d) | NROW(d) == 0) {
       return()
     }
 
-    if (!is.null(input$des)) {
-      
-       d %<>% dplyr::filter(technical_area %in% input$des)
-     }
-    
-    if (!is.null(input$mechs)) {
-      d %<>% dplyr::filter(mech_code %in% input$mechs)
-    }
     
     if (input$free_text_filter != "") {
       row_filter<- d %>% dplyr::rowwise() %>% 
@@ -484,8 +472,6 @@ shinyServer(function(input, output, session) {
       d<-d[row_filter,]
     
       }
-    
-    print(names(d))
     d
     
   })
