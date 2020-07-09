@@ -59,9 +59,7 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$ou,{
-    cat("Firing input$ou")
-    cat(input$ou)
-    
+
     dd<-getMechDropDown(user_input$user_mechs,input$ou)
     
     updateSelectizeInput(session=session,

@@ -2,6 +2,7 @@ require(purrr)
 require(magrittr)
 require(dplyr)
 require(futile.logger)
+require(datimvalidation)
 
 #Initiate logging
 logger <- flog.logger()
