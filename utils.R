@@ -238,6 +238,21 @@ getUserMechanisms<-function() {
   
 }
 
+getMechDropDown<-function(mechs,ou_ids = NULL) {
+  if (is.null(ou_ids)) {
+    dd<-  mechs %>% 
+      dplyr::select(mech_code) %>% 
+      dplyr::arrange(mech_code)
+  } else  {
+    cat(names(mechs))
+    dd<-mechs %>% 
+      dplyr::filter(orgunit_id %in% ou_ids) %>% 
+      dplyr::select(mech_code) %>% 
+      dplyr::arrange(mech_code)
+    
+  }
+
+}
 
 
 d2_analyticsResponse <- function(url,remapCols=TRUE) {

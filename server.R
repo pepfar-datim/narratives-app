@@ -39,6 +39,9 @@ shinyServer(function(input, output, session) {
                                selected_data_elements = NULL,
                                selected_mechanisms = NULL,
                                has_des_filter = FALSE)
+  selected_ous<-reactiveValues(selected_ous = NULL)
+  
+  
   
   observeEvent(input$fetch, {
     ready$ok <- TRUE
@@ -65,14 +68,23 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$mechs, {
     user_input$selected_mechs <-input$mechs
-    print(user_input$selected_mechs)
   })
+  
+  observeEvent(input$ou,{
+    cat("Firing input$ou")
+    cat(input$ou)
+    
+    dd<-getMechDropDown(user_input$user_mechs,input$ou)
+    
+    updateSelectizeInput(session=session,
+                         inputId = "mechs",
+                         selected = NULL, choices = dd)
+  }, ignoreNULL = FALSE,ignoreInit = TRUE)
   
   
   observeEvent(input$des, {
     user_input$has_des_filter<-TRUE
     user_input$selected_data_elements <-input$des
-
   })
   
   observeEvent(input$login_button, {
@@ -95,9 +107,7 @@ shinyServer(function(input, output, session) {
       
       user_input$user_mechs<-getUserMechanisms() 
       
-      user_input$mech_dropdown <- user_input$user_mechs %>% 
-        dplyr::select(mech_code) %>% 
-        dplyr::arrange(mech_code)
+      user_input$mech_dropdown <- getMechDropDown(user_input$user_mechs,NULL)
       
       user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year)
       
@@ -119,7 +129,6 @@ shinyServer(function(input, output, session) {
       flog.info(paste0("User ", input$user_name, " login failed."), name = "datapack")
     }
   })  
-  
   
   output$ui <- renderUI({
     
@@ -245,7 +254,6 @@ shinyServer(function(input, output, session) {
         dplyr::arrange(`Operating unit`,`Country`,Partner,Mechanism,`Technical area`)
         
     } else {
-      print("VR is null!!!  ")
       NULL
     }
   },options=list(
