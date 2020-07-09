@@ -172,7 +172,8 @@ shinyServer(function(input, output, session) {
                         choices = user_input$data_elements_dropdown,
                         multiple = TRUE,
                         selected = NULL,
-                        options = list(placeholder = 'Select technical areas:')),
+                        
+                        options = list(placeholder = 'Select technical areas:', maxItems = 5)),
             tags$hr(),
             textInput(inputId = "free_text_filter",
                                label = "Search:",
