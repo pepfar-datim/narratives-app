@@ -26,7 +26,8 @@ shinyServer(function(input, output, session) {
                                data_elements_dropdown=NULL,
                                selected_data_elements = NULL,
                                selected_mechanisms = NULL,
-                               has_des_filter = FALSE)
+                               has_des_filter = FALSE,
+                               has_all_mechanisms = FALSE)
   selected_ous<-reactiveValues(selected_ous = NULL)
   
   
@@ -104,6 +105,9 @@ shinyServer(function(input, output, session) {
 
       flog.info(paste0("User operating unit is ", getOption("organisationUnit")))
 
+      
+      user_input$has_all_mechanisms<-userHasAllMechanisms()
+      
       waiter_hide()
       
     } else {
@@ -159,6 +163,12 @@ shinyServer(function(input, output, session) {
                         label= "Fiscal Quarter",
                         c(1,2,3,4),
                         selected=getCurrentFiscalQuarter()),
+            tags$hr(),
+            conditionalPanel(
+              condition = "user_input$has_all_mechanisms == true",
+              checkboxInput(inputId = "include_usg_narratives",
+                          label = "Include USG narratives?",
+                          value = FALSE)),
             tags$hr(),
             selectizeInput(inputId = "mechs", 
                         label= "Mechanisms",
@@ -224,7 +234,8 @@ shinyServer(function(input, output, session) {
   #Outputs 
   output$narratives <- DT::renderDataTable({
     
-    vr<-filtered_narratives()
+    vr<-filtered_narratives() %>% 
+      purrr::pluck(partner_data)
 
     if (!inherits(vr,"error") & !is.null(vr) & NROW(vr) > 0){
       vr %>% 
@@ -352,21 +363,28 @@ shinyServer(function(input, output, session) {
                 dplyr::pull(de_uid) %>% 
                 unique(.)
             } }
-        
       
+      d<-list(partner_data = NULL,usg_data=NULL)  
+      #Partner data
       url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = user_input$fiscal_year,
                                          fiscal_quarter = user_input$fiscal_quarter,
                                          all_des = get_des())
 
-      d <- d2_analyticsResponse(url)
       
+      d$partner_data <- d2_analyticsResponse(url)
       
-      
-      
+      if (input$include_usg_narratives) {
+        usg_url<-assembleUSGNarrativeURL(ou = countries,
+                                         fiscal_year = user_input$fiscal_year,
+                                         fiscal_quarter = user_input$fiscal_quarter)
+        d$usg_data<-d2_analyticsResponse(usg_url)
+
+      }
+
       #Enable the button and return the data
       
-      if (NROW(d) == 0 ) {
+      if ( all(lapply(d, NROW)) == 0  ) {
         
         
         shinyjs::disable("downloadReport")
@@ -389,7 +407,7 @@ shinyServer(function(input, output, session) {
         ready$needs_refresh <- FALSE
       }
       
-      d<- d %>% dplyr::rename(country = `Organisation unit`) %>% 
+      d$partner_data<- d$partner_data %>% dplyr::rename(country = `Organisation unit`) %>% 
         dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
       dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
                  map(.,purrr::pluck(2)) %>% 

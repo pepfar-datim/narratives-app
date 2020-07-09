@@ -68,6 +68,20 @@ getPeriods<-function() {
 }
 
 
+userHasAllMechanisms<-function() {
+ 
+paste0(getOption("baseurl"),"api/me?fields=userGroups[name]") %>% 
+                httr::GET(.) %>% 
+                httr::content(.,"text") %>% 
+                jsonlite::fromJSON() %>% 
+                purrr::pluck("userGroups") %>% 
+                purrr::pluck("name") %>% 
+                stringr::str_detect(.,"all mechanisms") %>% 
+                any(.)
+   
+} 
+
+
 getUSGNarrativeDataElements<-function() {
   
   
@@ -186,7 +200,7 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter) {
   period_bit<-paste0("&filter=pe:", this_period)
   des<-getUSGNarrativeDataElements() %>% unlist()
   de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
-  ou_bit<-paste0("&filter=ou:", ou)
+  ou_bit<-paste0("&dimension=ou:", paste(ou,sep="",collapse=";"))
   end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false"
   paste0(base_url,de_bit,ou_bit,period_bit,end_bit)
   
