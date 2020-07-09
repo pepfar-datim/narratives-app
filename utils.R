@@ -1,3 +1,7 @@
+require(purrr)
+require(magrittr)
+require(dplyr)
+require(futile.logger)
 
 #Initiate logging
 logger <- flog.logger()

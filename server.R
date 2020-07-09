@@ -2,20 +2,8 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
-require(magrittr)
-require(dplyr)
-require(datimvalidation)
-require(ggplot2)
-require(futile.logger)
-require(scales)
 require(DT)
 require(config)
-require(purrr)
-require(praise)
-require(scales)
-require(plyr)
-require(doMC)
-require(rpivotTable)
 require(waiter)
 
 source("./utils.R")
@@ -253,7 +241,7 @@ shinyServer(function(input, output, session) {
         dplyr::arrange(`Operating unit`,`Country`,Partner,Mechanism,`Technical area`)
         
     } else {
-      data.frame("Message" = "No rows found. Try a different combination of paramaters.")
+      data.frame("Message" = "No records found. Try a different combination of paramaters.")
     }
   },options=list(
     bFilter=0,
