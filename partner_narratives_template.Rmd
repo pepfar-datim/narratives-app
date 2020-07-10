@@ -1,5 +1,5 @@
 ---
-title: "MER Results Narratives FY2020Q2 "
+title: "`r paste0('MER Results Narratives FY',input$fiscal_year,'Q',input$fiscal_quarter)`"
 date: "`r paste0('Generated on ' , format(Sys.time(), '%Y-%m-%d'))`"
 output:
   pdf_document:
