@@ -98,8 +98,20 @@ getNarrativeDataElements<-function(fiscal_year, type="Results") {
     dplyr::select(-id,-dataElements) %>% 
     mutate(year =   ( stringr::str_split(name," ") ) %>% purrr::map(purrr::pluck(1)) %>% unlist() ) %>% 
     dplyr::filter(stringr::str_detect(name,"^20")) %>% 
-    dplyr::mutate(type = ifelse(stringr::str_detect(name,"Result"),"Results","Targets")) %>% 
-    mutate(technical_area =   ( stringr::str_split(de_name," ") ) %>% purrr::map(purrr::pluck(1)) %>% unlist() ) 
+    dplyr::mutate(type = ifelse(stringr::str_detect(name,"Result"),"Results","Targets"))
+  
+  
+  #Technical area
+  
+  tech_area<-paste0(getOption("baseurl"),"api/dataElementGroupSets/LxhLO68FcXm?fields=dataElementGroups[id,name,dataElements[id]") %>% 
+  httr::GET() %>% httr::content("text") %>% jsonlite::fromJSON() %>% 
+    purrr::pluck("dataElementGroups") %>%
+    tidyr::unnest_longer(.,"dataElements",simplify = TRUE) %>% 
+    dplyr::mutate( de_uid = dataElements$id) %>% 
+    dplyr::select(-id,-dataElements) %>% 
+    dplyr::rename("technical_area" = name )
+  
+  des<- des %>% inner_join(tech_area,by="de_uid") 
   
   getListElement<-function(x,n) tryCatch(str_trim(str_split(x,","))[[n]],  error = function(e) return(NA))
   #Tech area
@@ -118,7 +130,8 @@ getNarrativeDataElements<-function(fiscal_year, type="Results") {
   
    dplyr::bind_cols(des,support_type) %>% 
     dplyr::filter(type == type) %>% 
-    dplyr::filter(year == fiscal_year)
+    dplyr::filter(year == fiscal_year) %>% 
+    dplyr::arrange(technical_area)
   
   
   
