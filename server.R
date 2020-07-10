@@ -204,6 +204,10 @@ shinyServer(function(input, output, session) {
     h4("Getting things set up. Please wait...")
   ) 
   
+  waiting_screen_pdf <- tagList(
+    spin_hourglass(),
+    h4("Producing PDF of your narratives. Please wait...")
+  ) 
 
   
   # password entry UI componenets:
@@ -262,7 +266,7 @@ shinyServer(function(input, output, session) {
     
     content = function(file) {
       
-      
+      waiter_show(html = waiting_screen_pdf, color = "rgba(128,128,128,.5)" )
       src <- normalizePath('partner_narratives_template.Rmd')
       img <- normalizePath('pepfar.png')
       # temporarily switch to the temp dir, in case you do not have write
@@ -274,6 +278,7 @@ shinyServer(function(input, output, session) {
       
       library(rmarkdown)
       out <- rmarkdown::render('report.Rmd', pdf_document(latex_engine = "xelatex"))
+      waiter_hide()  
       file.rename(out, file)
     }
   )
