@@ -149,7 +149,7 @@ shinyServer(function(input, output, session) {
                         label= "Operating Unit",
                         user_input$operating_units_dropdown,
                         multiple = TRUE,
-                        selected = NULL),
+                        selected = ifelse(user_input$user_operating_units == "ybg3MO3hcf4",NULL,user_input$user_operating_units)),
             tags$hr(),
             selectInput(inputId = "fiscal_year", 
                         label= "Fiscal Year",
@@ -298,6 +298,7 @@ shinyServer(function(input, output, session) {
       file.copy(img, 'pepfar.png', overwrite = TRUE)
       
       library(rmarkdown)
+      
       out <- rmarkdown::render('report.Rmd', word_document())
       file.rename(out, file)
     }

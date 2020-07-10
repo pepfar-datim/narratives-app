@@ -44,7 +44,8 @@ getOperatingUnits<-function(config) {
                    ou = name3) %>% 
     dplyr::select(ou,country)
   
-  ous<-paste0(getOption("baseurl"),"api/organisationUnits?filter=level:lt:5&fields=id,name&paging=false") %>% 
+  #TODO: Investigate why the API is not filtering based on the users orgunit, which really should be the case.
+  ous<-paste0(getOption("baseurl"),"api/organisationUnits?filter=level:lt:5&fields=id,name&filter=path:like:",getOption("organisationUnit"),"&paging=false") %>% 
     URLencode(.) %>% 
     httr::GET(.) %>% 
     httr::content(.,"text") %>% 
@@ -56,7 +57,11 @@ getOperatingUnits<-function(config) {
     dplyr::rename(country_id = id) %>% 
     dplyr::inner_join(ous,by=c("ou"="name")) %>% 
     dplyr::rename(ou_id = id) %>% 
-    dplyr::arrange(ou,country)}
+    dplyr::arrange(ou,country)
+  
+  
+  
+  }
 
 
 getPeriods<-function() {
@@ -194,6 +199,8 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter) {
 
 getUserMechanisms<-function() {
   
+  
+  #TODO: THhis API call does not respsect security trimming. 
   mechs<-paste0(getOption("baseurl"),"api/",api_version(),"/categoryOptionCombos?filter=categoryCombo.id:eq:wUpfppgjEza&fields=id,code,name,categoryOptions[id,organisationUnits[id,name]&paging=false") %>% 
     URLencode(.) %>% 
     httr::GET(.) %>% 
@@ -210,6 +217,17 @@ getUserMechanisms<-function() {
                   orgunit_id = categoryOptions.organisationUnits.id)
   
 
+  cogs<-paste0(getOption("baseurl"),"api/",api_version(),"/dimensions/SH885jaRe0o/items.json?fields=id,shortName") %>% 
+    httr::GET(.) %>% 
+    httr::content(.,"text") %>% 
+    jsonlite::fromJSON(.) %>% 
+    purrr::pluck("items")
+
+  #Filter based on the mechs the user actually has access to
+  mechs %<>%  dplyr::filter(category_option_id %in% cogs$id)
+  
+  
+  
   #Agency map
   agencies_cos<-paste0(getOption("baseurl"),"api/",api_version(),"/categoryOptionGroupSets/bw8KHXzxd9i?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
    URLencode(.) %>% 
@@ -237,8 +255,9 @@ getUserMechanisms<-function() {
            category_option_id = categoryOptions.id)
   
   #Return the full map of category options, category option combos, partners, agencies and mechanismsee
-  dplyr::left_join(mechs,partners_cos) %>% 
-    dplyr::left_join(agencies_cos)
+  dplyr::inner_join(mechs,partners_cos) %>% 
+    dplyr::inner_join(agencies_cos) %>% 
+    dplyr::arrange(mech_code)
   
   
 }
