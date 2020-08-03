@@ -206,7 +206,7 @@ shinyServer(function(input, output, session) {
   
   waiting_screen_pdf <- tagList(
     spin_hourglass(),
-    h4("Producing PDF of your narratives. Please wait...")
+    h4("Producing a PDF of the selected narratives. Please wait...")
   ) 
 
   
@@ -233,6 +233,7 @@ shinyServer(function(input, output, session) {
 
     if (!inherits(vr,"error") & !is.null(vr) & NROW(vr) > 0){
       vr %>% 
+        purrr::pluck("partner") %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
                       "Mechanism" = mech_code,
@@ -266,7 +267,7 @@ shinyServer(function(input, output, session) {
     
     content = function(file) {
       
-      waiter_show(html = waiting_screen_pdf, color = "rgba(128,128,128,.5)" )
+      waiter_show(html = waiting_screen_pdf, color = "rgba(128,128,128,.8)" )
       src <- normalizePath('partner_narratives_template.Rmd')
       img <- normalizePath('pepfar.png')
       # temporarily switch to the temp dir, in case you do not have write
@@ -366,14 +367,15 @@ shinyServer(function(input, output, session) {
                                          fiscal_quarter = user_input$fiscal_quarter,
                                          all_des = get_des())
 
-      d <- d2_analyticsResponse(url)
+      d<-list()
       
+      d$partner <- d2_analyticsResponse(url)
       
-      
+      d$usg<-NULL
       
       #Enable the button and return the data
       
-      if (NROW(d) == 0 ) {
+      if (all(is.null(d)) ) {
         
         
         shinyjs::disable("downloadReport")
@@ -396,7 +398,7 @@ shinyServer(function(input, output, session) {
         ready$needs_refresh <- FALSE
       }
       
-      d<- d %>% dplyr::rename(country = `Organisation unit`) %>% 
+      d$partner<- d$partner %>% dplyr::rename(country = `Organisation unit`) %>% 
         dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
       dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
                  map(.,purrr::pluck(2)) %>% 
@@ -451,21 +453,31 @@ shinyServer(function(input, output, session) {
     
     d <- narrative_results ()
     
-    if (is.null(d) | NROW(d) == 0) {
+    if (all(is.null(d))) {
       return()
     }
 
     
     if (input$free_text_filter != "") {
-      row_filter<- d %>% dplyr::rowwise() %>% 
+      
+      row_filter<- d$partner %>% dplyr::rowwise() %>% 
         purrr::map_dfr(.,function(x) stringr::str_detect(x,input$free_text_filter)) %>% 
         rowSums(.) %>% 
         as.logical(.)
       
-      d<-d[row_filter,]
+      d$partner<-d$partner[row_filter,]
     
-      }
-    d
+    }
+    
+    cat(names(d))
+    
+    if (!is.null(input$mechs)) {
+      
+      d$partner<-d$partner %>%  dplyr::filter(mech_code %in% input$mechs)
+      
+    }
+    
+    d 
     
   })
   
