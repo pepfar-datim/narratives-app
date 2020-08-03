@@ -13,6 +13,7 @@ fiscal_quarter<-2
 loadSecrets("/home/jason/.secrets/datim.json")
 
 
+#Initial setup
 ous<-getOperatingUnits()
 mechs<-getUserMechanisms() 
 des_partner<-getNarrativeDataElements(fiscal_year)
