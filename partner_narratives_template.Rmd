@@ -22,7 +22,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 if ( !exists("d") ) {
   
-  partner_data<-filtered_narratives() 
+  partner_data<-filtered_narratives() %>%  
+    dplyr::pull(partner)
   
 } else  {
   partner_data <- d$partner
