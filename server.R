@@ -476,7 +476,6 @@ shinyServer(function(input, output, session) {
     
     }
     
-    cat(names(d))
     
     if (!is.null(input$mechs)) {
       
