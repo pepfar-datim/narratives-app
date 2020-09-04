@@ -278,7 +278,7 @@ shinyServer(function(input, output, session) {
       on.exit(setwd(owd))
       file.copy(src, 'report.Rmd', overwrite = TRUE)
       file.copy(img, 'pepfar.png', overwrite = TRUE)
-      log.info(paste0("User ", input$user_name, " requested a PDF output."), name = "narratives")
+      flog.info(paste0("User ", input$user_name, " requested a PDF output."), name = "narratives")
       
       library(rmarkdown)
       out <- rmarkdown::render('report.Rmd', pdf_document(latex_engine = "xelatex"))
@@ -296,7 +296,7 @@ shinyServer(function(input, output, session) {
     
     content = function(file) {
       
-      log.info(paste0("User ", input$user_name, " requested a DOCX output."), name = "narratives")
+      flog.info(paste0("User ", input$user_name, " requested a DOCX output."), name = "narratives")
       src <- normalizePath('partner_narratives_template.Rmd')
       img <- normalizePath('pepfar.png')
       # temporarily switch to the temp dir, in case you do not have write
@@ -321,7 +321,7 @@ shinyServer(function(input, output, session) {
     },
     
     content = function(file) {
-      log.info(paste0("User ", input$user_name, " requested a XLSX output."), name = "narratives")
+      flog.info(paste0("User ", input$user_name, " requested a XLSX output."), name = "narratives")
       vr<-filtered_narratives() %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
