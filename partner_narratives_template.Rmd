@@ -20,11 +20,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r header ,results='asis', echo=FALSE}
 
-if ( !exists("partner_data") ) {
+if ( !exists("d") ) {
   
   partner_data<-filtered_narratives() 
-
   
+} else  {
+  partner_data <- d$partner
 }
 
 if (!is.null(partner_data)) {
