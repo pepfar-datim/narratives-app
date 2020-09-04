@@ -326,6 +326,7 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       flog.info(paste0("User ", user_input$username, " requested a XLSX output."), name = "narratives")
       vr<-filtered_narratives() %>% 
+        purrr::pluck("partner") %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
                       "Mechanism" = mech_code,
