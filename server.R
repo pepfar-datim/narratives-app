@@ -16,11 +16,13 @@ shinyServer(function(input, output, session) {
   ready <- reactiveValues(ok = FALSE,
                           needs_refresh = TRUE)
   
-  user_input <- reactiveValues(authenticated = FALSE, 
+  user_input <- reactiveValues(authenticated = FALSE,
+                               username = NA,
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
                                is_global_user = FALSE,
-                               user_operating_units=NA,
+                               user_ope
+                               rating_units=NA,
                                operating_units_dropdown=NA,
                                user_mechs=NA,
                                mech_dropdown = NA,
@@ -78,6 +80,8 @@ shinyServer(function(input, output, session) {
   observeEvent(input$login_button, {
     is_logged_in <- FALSE
     user_input$authenticated <- DHISLogin(input$server, input$user_name, input$password)
+    user_input$username<-input$user_name
+    
     if (user_input$authenticated) {
 
       waiter_show(html = waiting_screen, color = "black")
@@ -278,7 +282,7 @@ shinyServer(function(input, output, session) {
       on.exit(setwd(owd))
       file.copy(src, 'report.Rmd', overwrite = TRUE)
       file.copy(img, 'pepfar.png', overwrite = TRUE)
-      flog.info(paste0("User ", input$user_name, " requested a PDF output."), name = "narratives")
+      flog.info(paste0("User ", user_input$username, " requested a PDF output."), name = "narratives")
       
       library(rmarkdown)
       out <- rmarkdown::render('report.Rmd', pdf_document(latex_engine = "xelatex"))
@@ -296,7 +300,7 @@ shinyServer(function(input, output, session) {
     
     content = function(file) {
       
-      flog.info(paste0("User ", input$user_name, " requested a DOCX output."), name = "narratives")
+      flog.info(paste0("User ", user_input$username, " requested a DOCX output."), name = "narratives")
       src <- normalizePath('partner_narratives_template.Rmd')
       img <- normalizePath('pepfar.png')
       # temporarily switch to the temp dir, in case you do not have write
@@ -321,7 +325,7 @@ shinyServer(function(input, output, session) {
     },
     
     content = function(file) {
-      flog.info(paste0("User ", input$user_name, " requested a XLSX output."), name = "narratives")
+      flog.info(paste0("User ", user_input$username, " requested a XLSX output."), name = "narratives")
       vr<-filtered_narratives() %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
