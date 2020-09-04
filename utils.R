@@ -20,8 +20,10 @@ DHISLogin <- function(baseurl, username, password) {
                  httr::authenticate(username, password),
                  httr::timeout(60))
   if (r$status != 200L) {
+    flog.info(paste0("User ", username, " log in failed."), name = "narratives")
     return(FALSE)
   } else {
+    flog.info(paste0("User ", username, " logged in."), name = "narratives")
     me <- jsonlite::fromJSON(httr::content(r, as = "text"))
     options("organisationUnit" = me$organisationUnits$id)
     return(TRUE)
@@ -59,8 +61,6 @@ getOperatingUnits<-function(config) {
     dplyr::rename(ou_id = id) %>% 
     dplyr::arrange(ou,country)
   
-  
-  
   }
 
 
@@ -75,7 +75,6 @@ getPeriods<-function() {
 
 getUSGNarrativeDataElements<-function() {
   
-  
   paste0(getOption("baseurl"),"api/dataSets/wkdCW3M4zYT?fields=id,dataSetElements,organisationUnits") %>% 
     URLencode(.) %>% 
     httr::GET(.) %>% 
@@ -83,8 +82,6 @@ getUSGNarrativeDataElements<-function() {
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("dataSetElements") %>% 
     purrr::pluck("dataElement")
-  
-  
   
 }
 
@@ -293,8 +290,7 @@ getMechDropDown<-function(mechs,ou_ids = NULL) {
 
 
 d2_analyticsResponse <- function(url,remapCols=TRUE) {
-print("About to get:")
-  print(url)
+
   d<-url %>% 
     httr::GET(.) %>% 
     httr::content(.,"text") %>% 
