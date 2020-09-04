@@ -21,8 +21,7 @@ shinyServer(function(input, output, session) {
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
                                is_global_user = FALSE,
-                               user_ope
-                               rating_units=NA,
+                               user_operating_units=NA,
                                operating_units_dropdown=NA,
                                user_mechs=NA,
                                mech_dropdown = NA,
