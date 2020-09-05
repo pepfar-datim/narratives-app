@@ -40,6 +40,7 @@ shinyServer(function(input, output, session) {
   })  
   
   observeEvent(input$reset_input, {
+
     shinyjs::reset("side-panel")
     shinyjs::reset("des")
     shinyjs::reset("mechs")
@@ -186,7 +187,7 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             actionButton("fetch","Get Narratives"),
             tags$hr(),
-            actionButton("reset-input","Reset choices"),
+            actionButton("reset_input","Reset choices"),
             tags$hr(),
             disabled(downloadButton('downloadReport',"Download PDF")),
             tags$hr(),
