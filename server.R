@@ -276,15 +276,20 @@ shinyServer(function(input, output, session) {
 
     if (!inherits(vr,"error") & !is.null(vr)){
       
-      vr %>% 
-        purrr::pluck("usg") %>% 
+      vr %<>%  purrr::pluck("usg")
+      
+      if ( is.null(vr) | NROW(vr) == 0) {
+        return(data.frame("Message" = "No records found. Try a different combination of paramaters."))
+      } else {
+        vr %<>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
                       "Technical area" = technical_area,
                       "Support type" = support_type,
                       "Narrative" = `Value`) %>%
-        dplyr::arrange(`Operating unit`,`Country`,`Technical area`)
-      
+          dplyr::arrange(`Operating unit`,`Country`,`Technical area`)
+        return(vr)
+      }
     } else {
       data.frame("Message" = "No records found. Try a different combination of paramaters.")
     }
@@ -526,23 +531,34 @@ shinyServer(function(input, output, session) {
     
     if (input$free_text_filter != "") {
       
-      row_filter<- d$partner %>% dplyr::rowwise() %>% 
-        purrr::map_dfr(.,function(x) stringr::str_detect(x,input$free_text_filter)) %>% 
+
+      row_filter<- function(df, filter_string)  {
+        
+        if (is.null(df)) {return(NULL)}
+        keep_rows<-df %>% dplyr::rowwise() %>% 
+        purrr::map_dfr(.,function(x) stringr::str_detect(x,filter_string)) %>% 
         rowSums(.) %>% 
         as.logical(.)
-      
-      d$partner<-d$partner[row_filter,]
+        
+        df[keep_rows,] }
+        
+      d<-lapply(d,function(x) row_filter(x,input$free_text_filter))
+
     
     }
     
+    if (!is.null(input$des)) {
+      d$usg<-d$usg %>% dplyr::filter(technical_area %in% input$des)
+    }
     
     if (!is.null(input$mechs)) {
       
       d$partner<-d$partner %>%  dplyr::filter(mech_code %in% input$mechs)
       
     }
-    cat(names(d))
-    cat(NROW(d$usg))
+    
+    if (!input$includeUSGNarratives) {d$usg<-NULL}
+
     d 
     
   })
