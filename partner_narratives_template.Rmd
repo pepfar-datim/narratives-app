@@ -20,6 +20,20 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r header ,results='asis', echo=FALSE}
 
+
+cleanText<-function (strings) 
+{
+    fromchar <- seqinr::s2c("\\{}$^_%#&~|")
+    tochar <- c("$\\backslash$", "\\{", "\\}", "\\$", "\\^", 
+        "\\_", "\\%", "\\#", "\\&", "\\~","\\|")
+    f <- function(string) {
+        seqinr::c2s(sapply(seqinr::s2c(string), function(x) ifelse(x %in% fromchar, 
+            tochar[which(x == fromchar)], x)))
+    }
+    sapply(strings, f, USE.NAMES = FALSE)
+}
+
+
 if ( !exists("d") ) {
   
   partner_data<-filtered_narratives() %>%  
@@ -48,18 +62,6 @@ partner_data<-dplyr::filter(ou_data,ou == unique_ous[a])
 cat(paste0("**Operating Unit: ",partner_data$ou[1]),"**")
 cat('\n\n')
 
-
-cleanText<-function (strings) 
-{
-    fromchar <- seqinr::s2c("\\{}$^_%#&~|")
-    tochar <- c("$\\backslash$", "\\{", "\\}", "\\$", "\\^", 
-        "\\_", "\\%", "\\#", "\\&", "\\~","\\|")
-    f <- function(string) {
-        seqinr::c2s(sapply(seqinr::s2c(string), function(x) ifelse(x %in% fromchar, 
-            tochar[which(x == fromchar)], x)))
-    }
-    sapply(strings, f, USE.NAMES = FALSE)
-}
 
 partner_data$Value<-cleanText(partner_data$Value)
 #Deal specially with bullets
@@ -137,37 +139,61 @@ for (k in 1:NROW(mech_data)) {
 ```{r usg_body ,results='asis', echo=FALSE, message = FALSE}
 
 
+
+if ( !exists("d") ) {
+  
+  usg_data<-filtered_narratives() %>%  
+    purrr::pluck("usg")
+  
+} else  {
+  usg_data <- d$usg
+}
+
+
 if (exists("usg_data")) {
   
+  unique_countries<-dplyr::select(usg_data,ou,country) %>% 
+  dplyr::distinct() %>% 
+  dplyr::arrange(ou,country) %>% 
+  dplyr::select(ou,country)
   
- usg_data$Value<-cleanText(usg_data$Value)
+  unique_ous<-unique(unique_countries$ou)
+  
+usg_data$Value<-cleanText(usg_data$Value)
 #Deal specially with bullets
 usg_data$Value<-gsub("•"," \\\\hfill \\\\break  •",usg_data$Value)
 
+
+for (ou in seq_along(unique_ous)) {
+  
+  country_data<-usg_data %>% 
+    dplyr::filter(ou== ou)
+  
 cat("# USG Narratives")
 cat('\n\n')
-cat(paste0("**Operating Unit: ",partner_data$ou[1]),"**")
+cat(paste0("**Operating Unit: ",unique_ous[ou]),"**")
 cat('\n\n')
 
-unique_countries<-unique(usg_data$country)
 
-for (j in seq_along(unique_countries))
+
+for (country in NROW(unique_countries))
+  
   country_data<-usg_data %>% 
-    dplyr::filter(country == unique_countries[j]) %>% 
-   dplyr::arrange(`Data`)
+    dplyr::filter(country == country) %>% 
+   dplyr::arrange(technical_area,support_type)
 
-cat(paste0('## Country:',country_data$country[1] ))
+cat(paste0('## Country:',unique_countries$country[country] ))
 cat('\n\n')
 
 for (k in 1:NROW(country_data)) {
- cat(paste0("**",country_data$`Data`[k],"**"))
+ cat(paste0("**",country_data$technical_area[k],"**"))
  cat('\n\n')
- this_narrative<-country_data$Value[k]
- cat(paste0(this_narrative))
+ cat(paste0(country_data$Value[k]))
 cat('\n\n')
 }  
 }
-cat('\\pagebreak')
+cat('\\pagebreak') }
+
 
 ```
 

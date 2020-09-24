@@ -31,6 +31,19 @@ DHISLogin <- function(baseurl, username, password) {
 }
 
 
+isUSGUser<-function() {
+  
+  url<-paste0(getOption("baseurl"), "api/me?fields=userGroups[id,name]") %>% 
+    utils::URLencode(.) %>% 
+    httr::GET() %>% 
+    httr::content(.,"text") %>% 
+    jsonlite::fromJSON() %>% 
+    purrr::pluck("userGroups") %>% 
+    dplyr::mutate(is_usg = stringr::str_detect(name,"Interagency|Global")) %>% 
+    dplyr::pull(is_usg) %>% 
+    any(.)
+}
+
 getOperatingUnits<-function(config) {
   
   
@@ -201,8 +214,8 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter) {
   period_bit<-paste0("&filter=pe:", this_period)
   des<-getUSGNarrativeDataElements() %>% unlist()
   de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
-  ou_bit<-paste0("&filter=ou:", ou)
-  end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false"
+  ou_bit<-paste0("&dimension=ou:", ou)
+  end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
   paste0(base_url,de_bit,ou_bit,period_bit,end_bit)
   
 }

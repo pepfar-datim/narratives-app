@@ -20,6 +20,7 @@ shinyServer(function(input, output, session) {
                                username = NA,
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
+                               is_usg_user = FALSE,
                                is_global_user = FALSE,
                                user_operating_units=NA,
                                operating_units_dropdown=NA,
@@ -96,6 +97,8 @@ shinyServer(function(input, output, session) {
         tibble::deframe()
       
       user_input$is_global_user <- getOption("organisationUnit") == "ybg3MO3hcf4"
+      
+      user_input$is_usg_user <- isUSGUser()
       
       user_input$user_mechs<-getUserMechanisms() 
       
@@ -185,6 +188,8 @@ shinyServer(function(input, output, session) {
                                label = "Search:",
                                placeholder = "Free text search:"),
             tags$hr(),
+            conditionalPanel(checkboxInput("includeUSGNarratives",label = "Include USG Narratives"),condition = user_input$is_usg_user),
+            tags$hr(),
             actionButton("fetch","Get Narratives"),
             tags$hr(),
             actionButton("reset_input","Reset choices"),
@@ -198,7 +203,8 @@ shinyServer(function(input, output, session) {
           mainPanel(tabsetPanel(
             id = "main-panel",
             type = "tabs",
-            tabPanel("Narratives", dataTableOutput('narratives'))
+            tabPanel("Narratives", dataTableOutput('narratives')),
+            tabPanel("USG Narratives",dataTableOutput('usg_narratives'))
             
           ))
         ))
@@ -237,8 +243,8 @@ shinyServer(function(input, output, session) {
     
     vr<-filtered_narratives()
 
-    if (!inherits(vr,"error") & !is.null(vr) & NROW(vr) > 0){
-      vr %>% 
+    if (!inherits(vr,"error") & !is.null(vr) ){
+     vr %>% 
         purrr::pluck("partner") %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
@@ -264,6 +270,34 @@ shinyServer(function(input, output, session) {
         "'<span title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
         "}")))))
   
+  output$usg_narratives <- DT::renderDataTable({
+    
+    vr<-filtered_narratives()
+
+    if (!inherits(vr,"error") & !is.null(vr)){
+      
+      vr %>% 
+        purrr::pluck("usg") %>% 
+        dplyr::select("Operating unit"  = ou,
+                      "Country" = country,
+                      "Technical area" = technical_area,
+                      "Support type" = support_type,
+                      "Narrative" = `Value`) %>%
+        dplyr::arrange(`Operating unit`,`Country`,`Technical area`)
+      
+    } else {
+      data.frame("Message" = "No records found. Try a different combination of paramaters.")
+    }
+  },options=list(
+    bFilter=0,
+    bInfo=0,
+    columnDefs = list(list(
+      targets = c(5),
+      render = JS(
+        "function(data, type, row, meta) {",
+        "return type === 'display' && data.length > 100 ?",
+        "'<span title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
+        "}")))))
   
   output$downloadReport <- downloadHandler(
     filename = function() {
@@ -371,16 +405,27 @@ shinyServer(function(input, output, session) {
             } }
         
       
+      d<-list()
+      
       url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = user_input$fiscal_year,
                                          fiscal_quarter = user_input$fiscal_quarter,
                                          all_des = get_des())
 
-      d<-list()
-      
+  
       d$partner <- d2_analyticsResponse(url)
-      
-      d$usg<-NULL
+    
+      if (user_input$is_usg_user  & input$includeUSGNarratives ) {
+        url<- assembleUSGNarrativeURL(ou = countries,
+                                      fiscal_year = user_input$fiscal_year,
+                                      fiscal_quarter = user_input$fiscal_quarter)
+ 
+        d$usg<-d2_analyticsResponse(url)
+     
+      } else {
+        d$usg<-NULL
+      }
+
       
       #Enable the button and return the data
       
@@ -407,13 +452,25 @@ shinyServer(function(input, output, session) {
         ready$needs_refresh <- FALSE
       }
       
-      d$partner<- d$partner %>% dplyr::rename(country = `Organisation unit`) %>% 
-        dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
-      dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
-                 map(.,purrr::pluck(2)) %>% 
-                 unlist() ) ) %>% 
-        dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
-      dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+      if(!is.null(d$partner)) {
+        
+        d$partner  %<>% dplyr::rename(country = `Organisation unit`) %>% 
+          dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
+          dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
+                                         map(.,purrr::pluck(2)) %>% 
+                                         unlist() ) ) %>% 
+          dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
+          dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+      }
+
+      
+      if (!is.null(d$usg)) {
+        
+        d$usg %<>% dplyr::rename(country = `Organisation unit`) %>% 
+          dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
+          dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+      }
+      
       
       ready$needs_refresh <- FALSE
 
@@ -484,7 +541,8 @@ shinyServer(function(input, output, session) {
       d$partner<-d$partner %>%  dplyr::filter(mech_code %in% input$mechs)
       
     }
-    
+    cat(names(d))
+    cat(NROW(d$usg))
     d 
     
   })
