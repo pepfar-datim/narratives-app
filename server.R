@@ -365,7 +365,8 @@ shinyServer(function(input, output, session) {
     
     content = function(file) {
       flog.info(paste0("User ", user_input$username, " requested a XLSX output."), name = "narratives")
-      vr<-filtered_narratives() %>% 
+      vr<-list()
+      partner_data<-filtered_narratives() %>% 
         purrr::pluck("partner") %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
@@ -376,6 +377,23 @@ shinyServer(function(input, output, session) {
                       "Support type" = support_type,
                       "Narrative" = `Value`) %>%
         dplyr::arrange(`Operating unit`,Country,Partner,Mechanism,`Technical area`)
+      
+      vr$partner_data<-partner_data
+      
+      usg_data<-filtered_narratives() %>% 
+        purrr::pluck("usg") 
+      
+      if (!is.null(usg_data) & NROW(usg_data) > 0 ){
+        
+        usg_data %<>% dplyr::select("Operating unit"  = ou,
+                      "Country" = country,
+                      "Technical area" = technical_area,
+                      "Support type" = support_type,
+                      "Narrative" = `Value`) 
+        vr$USG<-usg_data
+      }
+      
+      
       openxlsx::write.xlsx(vr, file = file)
     }
   )
