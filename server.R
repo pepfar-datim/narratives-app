@@ -20,6 +20,7 @@ shinyServer(function(input, output, session) {
                                username = NA,
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
+                               is_usg_user = FALSE,
                                is_global_user = FALSE,
                                user_operating_units=NA,
                                operating_units_dropdown=NA,
@@ -96,6 +97,8 @@ shinyServer(function(input, output, session) {
         tibble::deframe()
       
       user_input$is_global_user <- getOption("organisationUnit") == "ybg3MO3hcf4"
+      
+      user_input$is_usg_user <- isUSGUser()
       
       user_input$user_mechs<-getUserMechanisms() 
       
@@ -185,6 +188,8 @@ shinyServer(function(input, output, session) {
                                label = "Search:",
                                placeholder = "Free text search:"),
             tags$hr(),
+            conditionalPanel(checkboxInput("includeUSGNarratives",label = "Include USG Narratives"),condition = user_input$is_usg_user),
+            tags$hr(),
             actionButton("fetch","Get Narratives"),
             tags$hr(),
             actionButton("reset_input","Reset choices"),
@@ -198,7 +203,8 @@ shinyServer(function(input, output, session) {
           mainPanel(tabsetPanel(
             id = "main-panel",
             type = "tabs",
-            tabPanel("Narratives", dataTableOutput('narratives'))
+            tabPanel("Narratives", dataTableOutput('narratives')),
+            tabPanel("USG Narratives",dataTableOutput('usg_narratives'))
             
           ))
         ))
@@ -237,8 +243,8 @@ shinyServer(function(input, output, session) {
     
     vr<-filtered_narratives()
 
-    if (!inherits(vr,"error") & !is.null(vr) & NROW(vr) > 0){
-      vr %>% 
+    if (!inherits(vr,"error") & !is.null(vr) ){
+     vr %>% 
         purrr::pluck("partner") %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
@@ -264,6 +270,39 @@ shinyServer(function(input, output, session) {
         "'<span title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
         "}")))))
   
+  output$usg_narratives <- DT::renderDataTable({
+    
+    vr<-filtered_narratives()
+
+    if (!inherits(vr,"error") & !is.null(vr)){
+      
+      vr %<>%  purrr::pluck("usg")
+      
+      if ( is.null(vr) | NROW(vr) == 0) {
+        return(data.frame("Message" = "No records found. Try a different combination of paramaters."))
+      } else {
+        vr %<>% 
+        dplyr::select("Operating unit"  = ou,
+                      "Country" = country,
+                      "Technical area" = technical_area,
+                      "Support type" = support_type,
+                      "Narrative" = `Value`) %>%
+          dplyr::arrange(`Operating unit`,`Country`,`Technical area`)
+        return(vr)
+      }
+    } else {
+      data.frame("Message" = "No records found. Try a different combination of paramaters.")
+    }
+  },options=list(
+    bFilter=0,
+    bInfo=0,
+    columnDefs = list(list(
+      targets = c(5),
+      render = JS(
+        "function(data, type, row, meta) {",
+        "return type === 'display' && data.length > 100 ?",
+        "'<span title=\"' + data + '\">' + data.substr(0, 100) + '...</span>' : data;",
+        "}")))))
   
   output$downloadReport <- downloadHandler(
     filename = function() {
@@ -326,7 +365,8 @@ shinyServer(function(input, output, session) {
     
     content = function(file) {
       flog.info(paste0("User ", user_input$username, " requested a XLSX output."), name = "narratives")
-      vr<-filtered_narratives() %>% 
+      vr<-list()
+      partner_data<-filtered_narratives() %>% 
         purrr::pluck("partner") %>% 
         dplyr::select("Operating unit"  = ou,
                       "Country" = country,
@@ -337,6 +377,23 @@ shinyServer(function(input, output, session) {
                       "Support type" = support_type,
                       "Narrative" = `Value`) %>%
         dplyr::arrange(`Operating unit`,Country,Partner,Mechanism,`Technical area`)
+      
+      vr$partner_data<-partner_data
+      
+      usg_data<-filtered_narratives() %>% 
+        purrr::pluck("usg") 
+      
+      if (!is.null(usg_data) & NROW(usg_data) > 0 ){
+        
+        usg_data %<>% dplyr::select("Operating unit"  = ou,
+                      "Country" = country,
+                      "Technical area" = technical_area,
+                      "Support type" = support_type,
+                      "Narrative" = `Value`) 
+        vr$USG<-usg_data
+      }
+      
+      
       openxlsx::write.xlsx(vr, file = file)
     }
   )
@@ -371,16 +428,27 @@ shinyServer(function(input, output, session) {
             } }
         
       
+      d<-list()
+      
       url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = user_input$fiscal_year,
                                          fiscal_quarter = user_input$fiscal_quarter,
                                          all_des = get_des())
 
-      d<-list()
-      
+  
       d$partner <- d2_analyticsResponse(url)
-      
-      d$usg<-NULL
+    
+      if (user_input$is_usg_user  & input$includeUSGNarratives ) {
+        url<- assembleUSGNarrativeURL(ou = countries,
+                                      fiscal_year = user_input$fiscal_year,
+                                      fiscal_quarter = user_input$fiscal_quarter)
+ 
+        d$usg<-d2_analyticsResponse(url)
+     
+      } else {
+        d$usg<-NULL
+      }
+
       
       #Enable the button and return the data
       
@@ -407,13 +475,25 @@ shinyServer(function(input, output, session) {
         ready$needs_refresh <- FALSE
       }
       
-      d$partner<- d$partner %>% dplyr::rename(country = `Organisation unit`) %>% 
-        dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
-      dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
-                 map(.,purrr::pluck(2)) %>% 
-                 unlist() ) ) %>% 
-        dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
-      dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+      if(!is.null(d$partner)) {
+        
+        d$partner  %<>% dplyr::rename(country = `Organisation unit`) %>% 
+          dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
+          dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
+                                         map(.,purrr::pluck(2)) %>% 
+                                         unlist() ) ) %>% 
+          dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
+          dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+      }
+
+      
+      if (!is.null(d$usg)) {
+        
+        d$usg %<>% dplyr::rename(country = `Organisation unit`) %>% 
+          dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
+          dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+      }
+      
       
       ready$needs_refresh <- FALSE
 
@@ -469,15 +549,25 @@ shinyServer(function(input, output, session) {
     
     if (input$free_text_filter != "") {
       
-      row_filter<- d$partner %>% dplyr::rowwise() %>% 
-        purrr::map_dfr(.,function(x) stringr::str_detect(x,input$free_text_filter)) %>% 
+
+      row_filter<- function(df, filter_string)  {
+        
+        if (is.null(df)) {return(NULL)}
+        keep_rows<-df %>% dplyr::rowwise() %>% 
+        purrr::map_dfr(.,function(x) stringr::str_detect(x,filter_string)) %>% 
         rowSums(.) %>% 
         as.logical(.)
-      
-      d$partner<-d$partner[row_filter,]
+        
+        df[keep_rows,] }
+        
+      d<-lapply(d,function(x) row_filter(x,input$free_text_filter))
+
     
     }
     
+    if (!is.null(input$des)) {
+      d$usg<-d$usg %>% dplyr::filter(technical_area %in% input$des)
+    }
     
     if (!is.null(input$mechs)) {
       
@@ -485,6 +575,8 @@ shinyServer(function(input, output, session) {
       
     }
     
+    if (!input$includeUSGNarratives) {d$usg<-NULL}
+
     d 
     
   })

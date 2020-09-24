@@ -31,6 +31,19 @@ DHISLogin <- function(baseurl, username, password) {
 }
 
 
+isUSGUser<-function() {
+  
+  url<-paste0(getOption("baseurl"), "api/me?fields=userGroups[id,name]") %>% 
+    utils::URLencode(.) %>% 
+    httr::GET() %>% 
+    httr::content(.,"text") %>% 
+    jsonlite::fromJSON() %>% 
+    purrr::pluck("userGroups") %>% 
+    dplyr::mutate(is_usg = stringr::str_detect(name,"Interagency|Global")) %>% 
+    dplyr::pull(is_usg) %>% 
+    any(.)
+}
+
 getOperatingUnits<-function(config) {
   
   
@@ -201,8 +214,8 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter) {
   period_bit<-paste0("&filter=pe:", this_period)
   des<-getUSGNarrativeDataElements() %>% unlist()
   de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
-  ou_bit<-paste0("&filter=ou:", ou)
-  end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false"
+  ou_bit<-paste0("&dimension=ou:", paste(ou,sep="",collapse=";"))
+  end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
   paste0(base_url,de_bit,ou_bit,period_bit,end_bit)
   
 }
@@ -210,7 +223,7 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter) {
 getUserMechanisms<-function() {
   
   
-  #TODO: THhis API call does not respsect security trimming. 
+  #TODO: THhis API call does not respect security trimming. 
   mechs<-paste0(getOption("baseurl"),"api/",api_version(),"/categoryOptionCombos?filter=categoryCombo.id:eq:wUpfppgjEza&fields=id,code,name,categoryOptions[id,organisationUnits[id,name]&paging=false") %>% 
     URLencode(.) %>% 
     httr::GET(.) %>% 
