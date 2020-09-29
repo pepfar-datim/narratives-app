@@ -543,9 +543,10 @@ shinyServer(function(input, output, session) {
     d <- narrative_results ()
     
     if (all(is.null(d))) {
-      return()
+      return(NULL)
     }
 
+    if (!input$includeUSGNarratives) {d$usg<-NULL}
     
     if (input$free_text_filter != "") {
       
@@ -565,17 +566,17 @@ shinyServer(function(input, output, session) {
     
     }
     
-    if (!is.null(input$des)) {
+    if (!is.null(input$des) & !is.null(d$usg)) {
       d$usg<-d$usg %>% dplyr::filter(technical_area %in% input$des)
     }
     
-    if (!is.null(input$mechs)) {
+    if (!is.null(input$mechs) & is.null(d$partner)) {
       
       d$partner<-d$partner %>%  dplyr::filter(mech_code %in% input$mechs)
       
     }
     
-    if (!input$includeUSGNarratives) {d$usg<-NULL}
+    
 
     d 
     
