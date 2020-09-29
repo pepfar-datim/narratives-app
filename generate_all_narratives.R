@@ -8,10 +8,11 @@ require(dplyr)
 source("./utils.R")
 
 fiscal_year<-2020
-fiscal_quarter<-2
+fiscal_quarter<-3
+
+input<-list(fiscal_year=fiscal_year,fiscal_quarter=fiscal_quarter)
 
 loadSecrets("/home/jason/.secrets/datim.json")
-
 
 #Initial setup
 ous<-getOperatingUnits()
@@ -30,56 +31,27 @@ for (i in 1:NROW(ous_unique)) {
                               fiscal_quarter = fiscal_quarter,
                               all_des = unique(des_partner$de_uid))
 
-  
-  is_parallel<-FALSE
-  if (length(url) > 1) {
-    is_parallel <- TRUE
-    ncores <- parallel::detectCores() -1
-    doMC::registerDoMC(cores = ncores)
-  }
-  
-  partner_data <- plyr::llply(partner_url,d2_analyticsResponse, .parallel = is_parallel)
-  
-  null_filter<-lapply(partner_data, function (x) !is.null(x)) %>% unlist()
-  partner_data<-partner_data[null_filter]
-  partner_countries<-countries$country[null_filter]
+  partner_data <- d2_analyticsResponse(partner_url) %>% 
+    dplyr::rename(country = `Organisation unit`) %>% 
+    dplyr::mutate(mech_code = (stringr::str_split(`Funding Mechanism`," - ") %>%
+                                 purrr::map(.,purrr::pluck(2)) %>%
+                                 unlist()) ) %>% 
+    dplyr::inner_join(mechs,by="mech_code") %>% 
+    dplyr::left_join(des_partner, by=c(`Data` = "de_name")) %>% 
+    dplyr::rename(ou = orgunit_name)%>% 
+    dplyr::arrange(country,mech_code,technical_area,support_type)
 
-  for (j in 1:length(partner_data)) {
-    partner_data[[j]]$country <- partner_countries[j]
-  }
-  
-  partner_data<-do.call(rbind.data.frame,partner_data)
-  partner_data$ou<-ous_unique$ou[i]
-  mech_codes<-stringr::str_split(partner_data$`Funding Mechanism`," - ") %>%
-    purrr::map(.,purrr::pluck(2)) %>%
-    unlist()
-  
-  partner_data$mech_code<-mech_codes
-  
-  partner_data %<>% dplyr::inner_join(mechs,by="mech_code") %>%
-    dplyr::arrange(country,mech_code,`Data`)
-  
-  
-  
-  
-  usg_url<-assembleUSGNarrativeURL(ou = countries$country_id,
+    
+  usg_data<-assembleUSGNarrativeURL(ou = countries$country_id,
                                     fiscal_year,
-                                   fiscal_quarter )
-                                    
-                                    
-  usg_data<- llply(usg_url,d2_analyticsResponse, .parallel = is_parallel)
-  null_filter<-lapply(usg_data, function (x) length(x)) %>% unlist() > 0
-  usg_data<-usg_data[null_filter]
-  usg_countries<-countries$country[null_filter]
+                                   fiscal_quarter ) %>% 
+    d2_analyticsResponse(.) %>% 
+    dplyr::rename(country = `Organisation unit`) %>%
+    dplyr::mutate(ou =  ous_unique$ou[i] ) %>% 
+    dplyr::left_join(des_partner,by=c(`Data` = "de_name")) %>% 
+    dplyr::arrange(country,technical_area,support_type)
   
-  
-  for (j in 1:length(usg_data)) {
-    usg_data[[j]]$country <- usg_countries[j]
-  }
-  
-  usg_data<-do.call(rbind.data.frame,usg_data)
-  usg_data$ou<-ous_unique$ou[i]
-  
+  d<-list(partners=partner_data,usg=usg_data)
   
   tryCatch(rmarkdown::render(
     paste0( "partner_narratives_template.Rmd"),

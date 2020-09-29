@@ -164,36 +164,37 @@ usg_data$Value<-cleanText(usg_data$Value)
 usg_data$Value<-gsub("•"," \\\\hfill \\\\break  •",usg_data$Value)
 
 
-for (ou in seq_along(unique_ous)) {
+for (k in seq_along(unique_ous)) {
   
-  country_data<-usg_data %>% 
-    dplyr::filter(ou== ou)
+  ou_data<-usg_data %>% 
+    dplyr::filter(ou == unique_ous[k])
   
 cat("# USG Narratives")
 cat('\n\n')
-cat(paste0("**Operating Unit: ",unique_ous[ou]),"**")
+cat(paste0("**Operating Unit: ",unique_ous[k]),"**")
 cat('\n\n')
 
 
+unique_countries<-unique(ou_data$country)
 
-for (country in NROW(unique_countries))
+for (j in seq_along(unique_countries)) {
   
-  country_data<-usg_data %>% 
-    dplyr::filter(country == country) %>% 
+  country_data<-ou_data %>% 
+    dplyr::filter(country == unique_countries[j]) %>% 
    dplyr::arrange(technical_area,support_type)
 
-cat(paste0('## Country:',unique_countries$country[country] ))
+cat(paste0('## Country:',unique_countries[j] ))
 cat('\n\n')
 
-for (k in 1:NROW(country_data)) {
- cat(paste0("**",country_data$technical_area[k],"**"))
+for (r in 1:NROW(country_data)) {
+ cat(paste0("**",country_data$technical_area[r]," (",country_data$support_type[r],")**"))
  cat('\n\n')
- cat(paste0(country_data$Value[k]))
+ cat(paste0(country_data$Value[r]))
 cat('\n\n')
 }  
 }
 cat('\\pagebreak') }
-
+}
 
 ```
 
