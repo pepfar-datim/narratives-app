@@ -1,11 +1,9 @@
-
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
 require(DT)
-require(config)
+
 require(waiter)
-require(futile.logger)
 
 
 source("./utils.R")

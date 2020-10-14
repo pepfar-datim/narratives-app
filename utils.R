@@ -2,7 +2,7 @@ require(purrr)
 require(magrittr)
 require(dplyr)
 require(futile.logger)
-require(datimvalidation)
+require(config)
 
 #Initiate logging
 logger <- flog.logger()
@@ -11,6 +11,8 @@ config <- config::get()
 options("baseurl" = config$baseurl)
 flog.appender(appender.file(config$log_path), name="narratives")
 
+
+api_version<-function() { "33" }
 
 DHISLogin <- function(baseurl, username, password) {
   httr::set_config(httr::config(http_version = 0))
