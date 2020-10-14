@@ -29,15 +29,16 @@ shinyServer(function(input, output, session) {
                                selected_data_elements = NULL,
                                selected_mechanisms = NULL,
                                has_des_filter = FALSE)
+  
   selected_ous<-reactiveValues(selected_ous = NULL)
-  
-  
   
   observeEvent(input$fetch, {
     ready$ok <- TRUE
     ready$needs_refresh <- TRUE
   })  
   
+  
+  #Observers for UI
   observeEvent(input$reset_input, {
 
     shinyjs::reset("side-panel")
@@ -45,7 +46,10 @@ shinyServer(function(input, output, session) {
     shinyjs::reset("mechs")
     shinyjs::reset("fiscal_year")
     shinyjs::reset("ou")
-    shinyjs::disable("fetch")
+    user_input$selected_data_elements<-NULL
+    user_input$selected_mechanisms<-NULL
+    ready$ok <- FALSE
+    ready$needs_refresh <- FALSE
 
   })
   
@@ -85,8 +89,6 @@ shinyServer(function(input, output, session) {
 
       waiter_show(html = waiting_screen, color = "black")
 
-      
-      #user_input$user_orgunit<-getOption("organisationUnit")
       flog.info(paste0("User ", input$user_name, " logged in."), name = "datapack")
       user_input$user_operating_units <- getOperatingUnits() 
       
@@ -123,6 +125,8 @@ shinyServer(function(input, output, session) {
     }
   })  
   
+  
+  #UI section
   output$ui <- renderUI({
     
     if (user_input$authenticated == FALSE) {
@@ -452,11 +456,9 @@ shinyServer(function(input, output, session) {
       
       if (all(is.null(d)) ) {
         
-        
         shinyjs::disable("downloadReport")
         shinyjs::disable("downloadXLSX")
         shinyjs::disable("downloadDocx")
-        
         shinyjs::enable("fetch")
   
         return(data.frame(
@@ -507,7 +509,7 @@ shinyServer(function(input, output, session) {
   narrative_results <- reactive({
     
     
-    if (input$fetch == 0) { return() }
+    if (input$fetch == 0) { return(NULL) }
     
     isolate({ 
       
