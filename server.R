@@ -2,6 +2,7 @@ library(shiny)
 library(shinyjs)
 library(shinyWidgets)
 require(DT)
+require(digest)
 
 require(waiter)
 
@@ -16,6 +17,7 @@ shinyServer(function(input, output, session) {
   
   user_input <- reactiveValues(authenticated = FALSE,
                                username = NA,
+                               pw=NA,
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
                                is_usg_user = FALSE,
@@ -84,6 +86,7 @@ shinyServer(function(input, output, session) {
     is_logged_in <- FALSE
     user_input$authenticated <- DHISLogin(input$server, input$user_name, input$password)
     user_input$username<-input$user_name
+    user_input$pw<-digest::sha1(input$password)
     
     if (user_input$authenticated) {
 
