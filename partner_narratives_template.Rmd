@@ -150,7 +150,7 @@ if ( !exists("d") ) {
 }
 
 
-if (exists("usg_data")) {
+if (!is.null(usg_data)) {
   
   unique_countries<-dplyr::select(usg_data,ou,country) %>% 
   dplyr::distinct() %>% 
