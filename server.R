@@ -17,7 +17,7 @@ shinyServer(function(input, output, session) {
   
   user_input <- reactiveValues(authenticated = FALSE,
                                username = NA,
-                               pw=NA,
+                               authorization_header=NA,
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
                                is_usg_user = FALSE,
@@ -84,37 +84,41 @@ shinyServer(function(input, output, session) {
   
   observeEvent(input$login_button, {
     is_logged_in <- FALSE
-    user_input$authenticated <- DHISLogin(input$server, input$user_name, input$password)
-    user_input$username<-input$user_name
-    user_input$pw<-digest::sha1(input$password)
+
+    login_status <- DHISLogin(config$baseurl, input$user_name,input$password)
     
+    user_input$authenticated<-login_status$status
+    user_input$httr_handle<-login_status$handle
+    user_input$user_operating_unit<-login_status$user_org_unit
+    user_input$username<-input$user_name
+
     if (user_input$authenticated) {
 
       waiter_show(html = waiting_screen, color = "black")
 
       flog.info(paste0("User ", input$user_name, " logged in."), name = "datapack")
-      user_input$user_operating_units <- getOperatingUnits() 
+      user_input$user_operating_units <- getOperatingUnits(handle=user_input$httr_handle)
       
       user_input$operating_units_dropdown <- user_input$user_operating_units %>% 
         dplyr::select(ou,ou_id) %>% 
         tibble::deframe()
       
-      user_input$is_global_user <- getOption("organisationUnit") == "ybg3MO3hcf4"
+      user_input$is_global_user <- user_input$user_operating_unit == "ybg3MO3hcf4"
       
-      user_input$is_usg_user <- isUSGUser()
+      user_input$is_usg_user <- isUSGUser(handle = user_input$httr_handle)
       
-      user_input$user_mechs<-getUserMechanisms() 
+      user_input$user_mechs<-getUserMechanisms(handle = user_input$httr_handle) 
       
       user_input$mech_dropdown <- getMechDropDown(user_input$user_mechs,NULL)
       
-      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year)
+      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year, handle =  user_input$httr_handle)
       
       user_input$data_elements_dropdown <- user_input$partner_data_elements %>% 
         dplyr::select(technical_area) %>% 
         dplyr::distinct() %>% 
         dplyr::arrange(technical_area)
 
-      flog.info(paste0("User operating unit is ", getOption("organisationUnit")))
+      flog.info(paste0("User operating unit is ", user_input$user_operating_unit))
 
       waiter_hide()
       
@@ -441,14 +445,15 @@ shinyServer(function(input, output, session) {
                                          all_des = get_des())
 
   
-      d$partner <- d2_analyticsResponse(url)
+      d$partner <- d2_analyticsResponse(url, handle = user_input$httr_handle)
     
       if (user_input$is_usg_user  & input$includeUSGNarratives ) {
         url<- assembleUSGNarrativeURL(ou = countries,
                                       fiscal_year = user_input$fiscal_year,
-                                      fiscal_quarter = user_input$fiscal_quarter)
+                                      fiscal_quarter = user_input$fiscal_quarter,
+                                      handle = user_input$httr_handle)
  
-        d$usg<-d2_analyticsResponse(url)
+        d$usg<-d2_analyticsResponse(url, handle = user_input$httr_handle)
      
       } else {
         d$usg<-NULL

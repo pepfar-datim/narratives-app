@@ -2,7 +2,7 @@ require(purrr)
 require(magrittr)
 require(dplyr)
 require(futile.logger)
-require(config)
+require(datimvalidation)
 
 #Initiate logging
 logger <- flog.logger()
@@ -12,32 +12,33 @@ options("baseurl" = config$baseurl)
 flog.appender(appender.file(config$log_path), name="narratives")
 
 
-api_version<-function() { "33" }
-
 DHISLogin <- function(baseurl, username, password) {
   httr::set_config(httr::config(http_version = 0))
-  url <- URLencode(URL = paste0(config$baseurl, "api/me"))
-  #Logging in here will give us a cookie to reuse
-  r <- httr::GET(url,
-                 httr::authenticate(username, password),
-                 httr::timeout(60))
+  url <- URLencode(URL = paste0(baseurl, "api/me"))
+  #Logging in here will give us a handle which we need to return if successful
+  
+  httr_handle <-httr::handle("custom")
+  r<-httr::with_config(config = httr::config(httpauth = 1, userpwd = paste0(username,":",password)),
+                                       httr::GET(url, handle = httr_handle),
+                                       override = TRUE)
+  
   if (r$status != 200L) {
     flog.info(paste0("User ", username, " log in failed."), name = "narratives")
-    return(FALSE)
+    return(list(status = FALSE, handle = NULL, user_org_unit = NULL))
   } else {
     flog.info(paste0("User ", username, " logged in."), name = "narratives")
     me <- jsonlite::fromJSON(httr::content(r, as = "text"))
     options("organisationUnit" = me$organisationUnits$id)
-    return(TRUE)
+    return(list(status = TRUE,handle = httr_handle, user_org_unit = me$organisationUnits$id))
   }
 }
 
 
-isUSGUser<-function() {
+isUSGUser<-function(handle) {
   
   url<-paste0(getOption("baseurl"), "api/me?fields=userGroups[id,name]") %>% 
     utils::URLencode(.) %>% 
-    httr::GET() %>% 
+    httr::GET(.,handle=handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON() %>% 
     purrr::pluck("userGroups") %>% 
@@ -46,12 +47,12 @@ isUSGUser<-function() {
     any(.)
 }
 
-getOperatingUnits<-function(config) {
+getOperatingUnits<-function(config, handle) {
   
   
   ou_map<-paste0(getOption("baseurl"),"api/dataStore/dataSetAssignments/orgUnitLevels") %>% 
     URLencode(.) %>% 
-    httr::GET(.) %>% 
+    httr::GET(., handle=handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     dplyr::bind_rows() %>% 
@@ -64,7 +65,7 @@ getOperatingUnits<-function(config) {
   #TODO: Investigate why the API is not filtering based on the users orgunit, which really should be the case.
   ous<-paste0(getOption("baseurl"),"api/organisationUnits?filter=level:lt:5&fields=id,name&filter=path:like:",getOption("organisationUnit"),"&paging=false") %>% 
     URLencode(.) %>% 
-    httr::GET(.) %>% 
+    httr::GET(., handle=handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("organisationUnits")
@@ -88,11 +89,11 @@ getPeriods<-function() {
 }
 
 
-getUSGNarrativeDataElements<-function() {
+getUSGNarrativeDataElements<-function(handle) {
   
   paste0(getOption("baseurl"),"api/dataSets/wkdCW3M4zYT?fields=id,dataSetElements,organisationUnits") %>% 
     URLencode(.) %>% 
-    httr::GET(.) %>% 
+    httr::GET(., handle=handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("dataSetElements") %>% 
@@ -100,11 +101,12 @@ getUSGNarrativeDataElements<-function() {
   
 }
 
-getNarrativeDataElements<-function(fiscal_year, type="Results") {
+getNarrativeDataElements<-function(fiscal_year, type="Results", handle) {
   
   
   des<- paste0(getOption("baseurl"),"api/dataElementGroups?filter=name:like:Narratives&paging=false&fields=id,name,dataElements[id,shortName]") %>% 
-    httr::GET() %>% httr::content("text") %>% jsonlite::fromJSON() %>% 
+    httr::GET(.,handle=handle) %>% 
+    httr::content("text") %>% jsonlite::fromJSON() %>% 
     purrr::pluck("dataElementGroups") %>%
     tidyr::unnest_longer(.,"dataElements",simplify = TRUE) %>% dplyr::mutate(de_name = dataElements$shortName, de_uid = dataElements$id) %>% 
     dplyr::select(-id,-dataElements) %>% 
@@ -116,7 +118,7 @@ getNarrativeDataElements<-function(fiscal_year, type="Results") {
   #Technical area
   
   tech_area<-paste0(getOption("baseurl"),"api/dataElementGroupSets/LxhLO68FcXm?fields=dataElementGroups[id,name,dataElements[id]") %>% 
-  httr::GET() %>% httr::content("text") %>% jsonlite::fromJSON() %>% 
+  httr::GET(.,handle=handle) %>% httr::content("text") %>% jsonlite::fromJSON() %>% 
     purrr::pluck("dataElementGroups") %>%
     tidyr::unnest_longer(.,"dataElements",simplify = TRUE) %>% 
     dplyr::mutate( de_uid = dataElements$id) %>% 
@@ -208,13 +210,13 @@ assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des) {
 }
 
 
-assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter) {
+assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter, handle) {
   
   this_period<-convertFYQuarterCalendarQuarter(fiscal_year , fiscal_quarter )
   
   base_url<-paste0(getOption("baseurl"),"api/analytics?")
   period_bit<-paste0("&filter=pe:", this_period)
-  des<-getUSGNarrativeDataElements() %>% unlist()
+  des<-getUSGNarrativeDataElements(handle = handle) %>% unlist()
   de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
   ou_bit<-paste0("&dimension=ou:", paste(ou,sep="",collapse=";"))
   end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
@@ -222,13 +224,13 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter) {
   
 }
 
-getUserMechanisms<-function() {
+getUserMechanisms<-function(handle) {
   
   
   #TODO: THhis API call does not respect security trimming. 
   mechs<-paste0(getOption("baseurl"),"api/",api_version(),"/categoryOptionCombos?filter=categoryCombo.id:eq:wUpfppgjEza&fields=id,code,name,categoryOptions[id,organisationUnits[id,name]&paging=false") %>% 
     URLencode(.) %>% 
-    httr::GET(.) %>% 
+    httr::GET(., handle=handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.,simplifyDataFrame = TRUE) %>% 
     purrr::pluck("categoryOptionCombos") %>% 
@@ -243,7 +245,7 @@ getUserMechanisms<-function() {
   
 
   cogs<-paste0(getOption("baseurl"),"api/",api_version(),"/dimensions/SH885jaRe0o/items.json?fields=id,shortName") %>% 
-    httr::GET(.) %>% 
+    httr::GET(., handle = handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("items")
@@ -251,12 +253,10 @@ getUserMechanisms<-function() {
   #Filter based on the mechs the user actually has access to
   mechs %<>%  dplyr::filter(category_option_id %in% cogs$id)
   
-  
-  
   #Agency map
   agencies_cos<-paste0(getOption("baseurl"),"api/",api_version(),"/categoryOptionGroupSets/bw8KHXzxd9i?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
    URLencode(.) %>% 
-    httr::GET(.) %>% 
+    httr::GET(., handle = handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("categoryOptionGroups") %>% 
@@ -270,7 +270,7 @@ getUserMechanisms<-function() {
   #Partner map
   partners_cos<-paste0(getOption("baseurl"),"api/",api_version(),"/categoryOptionGroupSets/BOyWrF33hiR?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
     URLencode(.) %>% 
-    httr::GET(.) %>% 
+    httr::GET(., handle = handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("categoryOptionGroups") %>% 
@@ -304,10 +304,10 @@ getMechDropDown<-function(mechs,ou_ids = NULL) {
 }
 
 
-d2_analyticsResponse <- function(url,remapCols=TRUE) {
+d2_analyticsResponse <- function(url,remapCols=TRUE, handle) {
 
   d<-url %>% 
-    httr::GET(.) %>% 
+    httr::GET(., handle = handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.)
   
