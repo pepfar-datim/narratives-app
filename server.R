@@ -103,7 +103,7 @@ shinyServer(function(input, output, session) {
         dplyr::select(ou,ou_id) %>% 
         tibble::deframe()
       
-      user_input$is_global_user <- getOption("organisationUnit") == "ybg3MO3hcf4"
+      user_input$is_global_user <- user_input$user_operating_unit == "ybg3MO3hcf4"
       
       user_input$is_usg_user <- isUSGUser(handle = user_input$httr_handle)
       
