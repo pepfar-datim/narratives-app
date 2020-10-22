@@ -3,6 +3,9 @@ require(magrittr)
 require(dplyr)
 require(futile.logger)
 
+
+api_version<-function() {"33"}
+
 #Initiate logging
 logger <- flog.logger()
 #Load the local config file
