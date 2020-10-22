@@ -85,7 +85,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$login_button, {
     is_logged_in <- FALSE
 
-    login_status <- DHISLogin(config$baseurl, input$username,input$password)
+    login_status <- DHISLogin(config$baseurl, input$user_name,input$password)
     
     user_input$authenticated<-login_status$status
     user_input$httr_handle<-login_status$handle
@@ -111,7 +111,7 @@ shinyServer(function(input, output, session) {
       
       user_input$mech_dropdown <- getMechDropDown(user_input$user_mechs,NULL)
       
-      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year, handle =  handle)
+      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year, handle =  user_input$httr_handle)
       
       user_input$data_elements_dropdown <- user_input$partner_data_elements %>% 
         dplyr::select(technical_area) %>% 
@@ -445,14 +445,15 @@ shinyServer(function(input, output, session) {
                                          all_des = get_des())
 
   
-      d$partner <- d2_analyticsResponse(url)
+      d$partner <- d2_analyticsResponse(url, handle = user_input$httr_handle)
     
       if (user_input$is_usg_user  & input$includeUSGNarratives ) {
         url<- assembleUSGNarrativeURL(ou = countries,
                                       fiscal_year = user_input$fiscal_year,
-                                      fiscal_quarter = user_input$fiscal_quarter)
+                                      fiscal_quarter = user_input$fiscal_quarter,
+                                      handle = user_input$httr_handle)
  
-        d$usg<-d2_analyticsResponse(url)
+        d$usg<-d2_analyticsResponse(url, handle = user_input$httr_handle)
      
       } else {
         d$usg<-NULL

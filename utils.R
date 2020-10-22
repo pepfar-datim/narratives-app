@@ -210,13 +210,13 @@ assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des) {
 }
 
 
-assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter) {
+assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter, handle) {
   
   this_period<-convertFYQuarterCalendarQuarter(fiscal_year , fiscal_quarter )
   
   base_url<-paste0(getOption("baseurl"),"api/analytics?")
   period_bit<-paste0("&filter=pe:", this_period)
-  des<-getUSGNarrativeDataElements() %>% unlist()
+  des<-getUSGNarrativeDataElements(handle = handle) %>% unlist()
   de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
   ou_bit<-paste0("&dimension=ou:", paste(ou,sep="",collapse=";"))
   end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
