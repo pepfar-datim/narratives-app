@@ -252,7 +252,7 @@ shinyServer(function(input, output, session) {
     
     vr<-filtered_narratives()
 
-    if (!inherits(vr,"error") & !is.null(vr) ){
+    if (!inherits(vr,"error") & !is.null(vr$partner) ){
      vr %>% 
         purrr::pluck("partner") %>% 
         dplyr::select("Operating unit"  = ou,
@@ -283,7 +283,7 @@ shinyServer(function(input, output, session) {
     
     vr<-filtered_narratives()
 
-    if (!inherits(vr,"error") & !is.null(vr)){
+    if (!inherits(vr,"error") & !is.null(vr$usg)){
       
       vr %<>%  purrr::pluck("usg")
       
