@@ -375,9 +375,11 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       flog.info(paste0("User ", user_input$username, " requested a XLSX output."), name = "narratives")
       vr<-list()
+      
       partner_data<-filtered_narratives() %>% 
-        purrr::pluck("partner") %>% 
-        dplyr::select("Operating unit"  = ou,
+        purrr::pluck("partner") 
+      if (!is.null(partner_data) & NROW(partner_data) > 0) {
+        partner_data %<>% dplyr::select("Operating unit"  = ou,
                       "Country" = country,
                       "Mechanism" = mech_code,
                       "Agency" = agency_name,
@@ -385,10 +387,11 @@ shinyServer(function(input, output, session) {
                       "Technical area" = technical_area,
                       "Support type" = support_type,
                       "Narrative" = `Value`) %>%
-        dplyr::arrange(`Operating unit`,Country,Partner,Mechanism,`Technical area`)
-      
-      vr$partner_data<-partner_data
-      
+          dplyr::arrange(`Operating unit`,Country,Partner,Mechanism,`Technical area`)
+        vr$partner_data<-partner_data
+      }
+
+    
       usg_data<-filtered_narratives() %>% 
         purrr::pluck("usg") 
       
@@ -468,18 +471,8 @@ shinyServer(function(input, output, session) {
         shinyjs::disable("downloadXLSX")
         shinyjs::disable("downloadDocx")
         shinyjs::enable("fetch")
-  
-        return(data.frame(
-          "ou" = character(),
-          "country"= character(),
-          "mech_code"= character(),
-          "agency_name"= character(),
-          "partner_name"= character(),
-          'Data'= character(),
-          'technical_area'= character(),
-          'support_type'= character(),
-          'Value'= character()
-        ))
+        
+        return(NULL)
         ready$needs_refresh <- FALSE
       }
       
