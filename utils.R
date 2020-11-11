@@ -2,6 +2,7 @@ require(purrr)
 require(magrittr)
 require(dplyr)
 require(futile.logger)
+require(seqinr)
 
 
 api_version<-function() {"33"}
