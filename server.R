@@ -1,13 +1,6 @@
-library(shiny)
-library(shinyjs)
-library(shinyWidgets)
-require(DT)
-require(digest)
-
-require(waiter)
-
-
 source("./utils.R")
+
+pacman::p_load(shiny,magrittr,shinyjs,shinyWidgets,DT,digest,waiter)
 
 shinyServer(function(input, output, session) {
   

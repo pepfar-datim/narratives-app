@@ -1,8 +1,8 @@
-require(purrr)
-require(magrittr)
-require(dplyr)
-require(futile.logger)
-require(seqinr)
+
+if (!require("pacman")) {
+  install.packages("pacman",repos="https://cloud.r-project.org") }
+
+pacman::p_load(purrr,magrittr,futile.logger,seqinr,dplyr) 
 
 
 api_version<-function() {"33"}
