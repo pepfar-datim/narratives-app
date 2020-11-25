@@ -78,14 +78,26 @@ shinyServer(function(input, output, session) {
   observeEvent(input$login_button, {
     is_logged_in <- FALSE
 
-    login_status <- DHISLogin(config$baseurl, input$user_name,input$password)
+    tryCatch(  {  datimutils::loginToDATIM(base_url = config$baseurl,
+                                             username = input$user_name,
+                                             password = input$password) },
+               
+              error=function(e) {
+                 sendSweetAlert(
+                   session,
+                   title = "Login failed",
+                   text = "Please check your username/password!",
+                   type = "error")
+                flog.info(paste0("User ", input$user_name, " login failed."), name = "datapack")
+              } )
     
-    user_input$authenticated<-login_status$status
-    user_input$httr_handle<-login_status$handle
-    user_input$user_operating_unit<-login_status$user_org_unit
-    user_input$username<-input$user_name
 
-    if (user_input$authenticated) {
+
+    if (exists("d2_default_session")) {
+      user_input$authenticated<-TRUE
+      user_input$httr_handle<-login_status$handle
+      user_input$user_operating_unit<-login_status$user_org_unit
+      user_input$username<-input$user_name
 
       waiter_show(html = waiting_screen, color = "black")
 
@@ -115,14 +127,7 @@ shinyServer(function(input, output, session) {
 
       waiter_hide()
       
-    } else {
-      sendSweetAlert(
-        session,
-        title = "Login failed",
-        text = "Please check your username/password!",
-        type = "error")
-      flog.info(paste0("User ", input$user_name, " login failed."), name = "datapack")
-    }
+    } 
   })  
   
   

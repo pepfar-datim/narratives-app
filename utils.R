@@ -11,31 +11,8 @@ api_version<-function() {"33"}
 logger <- flog.logger()
 #Load the local config file
 config <- config::get()
-options("baseurl" = config$baseurl)
+
 flog.appender(appender.file(config$log_path), name="narratives")
-
-
-DHISLogin <- function(baseurl, username, password) {
-  httr::set_config(httr::config(http_version = 0))
-  url <- URLencode(URL = paste0(baseurl, "api/me"))
-  #Logging in here will give us a handle which we need to return if successful
-  
-  httr_handle <-httr::handle("custom")
-  r<-httr::with_config(config = httr::config(httpauth = 1, userpwd = paste0(username,":",password)),
-                                       httr::GET(url, handle = httr_handle),
-                                       override = TRUE)
-  
-  if (r$status != 200L) {
-    flog.info(paste0("User ", username, " log in failed."), name = "narratives")
-    return(list(status = FALSE, handle = NULL, user_org_unit = NULL))
-  } else {
-    flog.info(paste0("User ", username, " logged in."), name = "narratives")
-    me <- jsonlite::fromJSON(httr::content(r, as = "text"))
-    options("organisationUnit" = me$organisationUnits$id)
-    return(list(status = TRUE,handle = httr_handle, user_org_unit = me$organisationUnits$id))
-  }
-}
-
 
 isUSGUser<-function(handle) {
   
