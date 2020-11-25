@@ -12,7 +12,7 @@ logger <- flog.logger()
 #Load the local config file
 config <- config::get()
 options("baseurl" = config$baseurl)
-flog.appender(appender.file(config$log_path), name="narratives")
+flog.appender(appender.console(), name="narratives")
 
 
 DHISLogin <- function(baseurl, username, password) {
