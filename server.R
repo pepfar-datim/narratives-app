@@ -1,13 +1,6 @@
-library(shiny)
-library(shinyjs)
-library(shinyWidgets)
-require(DT)
-require(digest)
-
-require(waiter)
-
-
 source("./utils.R")
+
+pacman::p_load(shiny,magrittr,shinyjs,shinyWidgets,DT,digest,waiter,datimutils)
 
 shinyServer(function(input, output, session) {
   
@@ -16,8 +9,6 @@ shinyServer(function(input, output, session) {
                           needs_refresh = TRUE)
   
   user_input <- reactiveValues(authenticated = FALSE,
-                               username = NA,
-                               authorization_header=NA,
                                fiscal_year = getCurrentFiscalYear(),
                                fiscal_quarter = getCurrentFiscalQuarter(),
                                is_usg_user = FALSE,
@@ -30,7 +21,8 @@ shinyServer(function(input, output, session) {
                                data_elements_dropdown=NULL,
                                selected_data_elements = NULL,
                                selected_mechanisms = NULL,
-                               has_des_filter = FALSE)
+                               has_des_filter = FALSE,
+                               d2_session = NULL)
   
   selected_ous<-reactiveValues(selected_ous = NULL)
   
@@ -85,19 +77,31 @@ shinyServer(function(input, output, session) {
   observeEvent(input$login_button, {
     is_logged_in <- FALSE
 
-    login_status <- DHISLogin(config$baseurl, input$user_name,input$password)
+    tryCatch(  {  datimutils::loginToDATIM(base_url = config$baseurl,
+                                             username = input$user_name,
+                                             password = input$password) },
+               
+              error=function(e) {
+                 sendSweetAlert(
+                   session,
+                   title = "Login failed",
+                   text = "Please check your username/password!",
+                   type = "error")
+                flog.info(paste0("User ", input$user_name, " login failed."), name = "datapack")
+              } )
     
-    user_input$authenticated<-login_status$status
-    user_input$httr_handle<-login_status$handle
-    user_input$user_operating_unit<-login_status$user_org_unit
-    user_input$username<-input$user_name
 
-    if (user_input$authenticated) {
+
+    if (exists("d2_default_session")) {
+      
+      user_input$authenticated<-TRUE
+      user_input$d2_session<-d2_default_session$clone()
 
       waiter_show(html = waiting_screen, color = "black")
 
-      flog.info(paste0("User ", input$user_name, " logged in."), name = "datapack")
-      user_input$user_operating_units <- getOperatingUnits(handle=user_input$httr_handle)
+      flog.info(paste0("User ", user_input$d2_session$username, " logged in."), name = "datapack")
+      
+      user_input$user_operating_units <- getOperatingUnits(d2_session = user_input$d2_session)
       
       user_input$operating_units_dropdown <- user_input$user_operating_units %>% 
         dplyr::select(ou,ou_id) %>% 
@@ -105,31 +109,24 @@ shinyServer(function(input, output, session) {
       
       user_input$is_global_user <- user_input$user_operating_unit == "ybg3MO3hcf4"
       
-      user_input$is_usg_user <- isUSGUser(handle = user_input$httr_handle)
+      user_input$is_usg_user <- isUSGUser(d2_session = user_input$d2_session)
       
-      user_input$user_mechs<-getUserMechanisms(handle = user_input$httr_handle) 
+      user_input$user_mechs<-getUserMechanisms(d2_session = user_input$d2_session) 
       
       user_input$mech_dropdown <- getMechDropDown(user_input$user_mechs,NULL)
       
-      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year, handle =  user_input$httr_handle)
+      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year, d2_session = user_input$d2_session)
       
       user_input$data_elements_dropdown <- user_input$partner_data_elements %>% 
         dplyr::select(technical_area) %>% 
         dplyr::distinct() %>% 
         dplyr::arrange(technical_area)
 
-      flog.info(paste0("User operating unit is ", user_input$user_operating_unit))
+      flog.info(paste0("User operating unit is ", user_input$d2_session$user_orgunit))
 
       waiter_hide()
       
-    } else {
-      sendSweetAlert(
-        session,
-        title = "Login failed",
-        text = "Please check your username/password!",
-        type = "error")
-      flog.info(paste0("User ", input$user_name, " login failed."), name = "datapack")
-    }
+    } 
   })  
   
   
@@ -445,18 +442,19 @@ shinyServer(function(input, output, session) {
       url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = user_input$fiscal_year,
                                          fiscal_quarter = user_input$fiscal_quarter,
-                                         all_des = get_des())
+                                         all_des = get_des(),
+                                         d2_session = user_input$d2_session)
 
   
-      d$partner <- d2_analyticsResponse(url, handle = user_input$httr_handle)
+      d$partner <- d2_analyticsResponse(url, d2_session = user_input$d2_session)
     
       if (user_input$is_usg_user  & input$includeUSGNarratives ) {
         url<- assembleUSGNarrativeURL(ou = countries,
                                       fiscal_year = user_input$fiscal_year,
                                       fiscal_quarter = user_input$fiscal_quarter,
-                                      handle = user_input$httr_handle)
+                                      d2_session = user_input$d2_session)
  
-        d$usg<-d2_analyticsResponse(url, handle = user_input$httr_handle)
+        d$usg<-d2_analyticsResponse(url, d2_session = user_input$d2_session)
      
       } else {
         d$usg<-NULL
