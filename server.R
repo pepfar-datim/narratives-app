@@ -129,6 +129,15 @@ shinyServer(function(input, output, session) {
     } 
   })  
   
+  observeEvent(input$logout,{
+    flog.info(paste0("User ", user_input$d2_session$me$userCredentials$username, " logged out."))
+    ready$ok <- FALSE
+    user_input$authenticated<-FALSE
+    user_input$d2_session<-NULL
+    gc()
+    
+  } )
+  
   
   #UI section
   output$ui <- renderUI({
@@ -196,15 +205,14 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             conditionalPanel(checkboxInput("includeUSGNarratives",label = "Include USG Narratives"),condition = user_input$is_usg_user),
             tags$hr(),
-            actionButton("fetch","Get Narratives"),
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("fetch","Get Narratives")),
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("reset_input","Reset")),
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("logout","Logout")),
             tags$hr(),
-            actionButton("reset_input","Reset choices"),
-            tags$hr(),
-            disabled(downloadButton('downloadReport',"Download PDF")),
-            tags$hr(),
-            disabled(downloadButton('downloadXLSX','Download XLSX')),
-            tags$hr(),
-            disabled(downloadButton('downloadDocx','Download DOCX'))
+            h4("Output type:"),
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadReport',"PDF"))),
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadXLSX','XLSX'))),
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadDocx','DOCX')))
           ),
           mainPanel(tabsetPanel(
             id = "main-panel",
