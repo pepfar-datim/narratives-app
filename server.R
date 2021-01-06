@@ -209,7 +209,7 @@ shinyServer(function(input, output, session) {
             div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("reset_input","Reset")),
             div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("logout","Logout")),
             tags$hr(),
-            h4("Output type:"),
+            h4("Download report:"),
             div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadReport',"PDF"))),
             div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadXLSX','XLSX'))),
             div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadDocx','DOCX')))
