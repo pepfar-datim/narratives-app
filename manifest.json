@@ -140,7 +140,7 @@
     },
     "XML": {
       "Source": "CRAN",
-      "Repository": null,
+      "Repository": "http://www.omegahat.net/RSXML",
       "description": {
         "Package": "XML",
         "Version": "3.99-0.3",
