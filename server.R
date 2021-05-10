@@ -177,7 +177,7 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             selectInput(inputId = "fiscal_year", 
                         label= "Fiscal Year",
-                        c("FY20"=2020,"FY19"=2019,"FY18"=2018,",FY17"=2017,"FY16"=2016)),
+                        c("FY21"=2021,FY20"=2020,"FY19"=2019,"FY18"=2018,",FY17"=2017,"FY16"=2016)),
             tags$hr(),
             selectInput(inputId = "fiscal_quarter", 
                         label= "Fiscal Quarter",
