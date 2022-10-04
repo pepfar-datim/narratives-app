@@ -1,6 +1,9 @@
 source("./utils.R")
 
-pacman::p_load(shiny,magrittr,shinyjs,shinyWidgets,DT,digest,waiter,datimutils)
+require(futile.logger)
+require(magrittr)
+require(DT)
+
 
 shinyServer(function(input, output, session) {
   
@@ -82,12 +85,12 @@ shinyServer(function(input, output, session) {
                                              password = input$password) },
                
               error=function(e) {
-                 sendSweetAlert(
+                shinyWidgets::sendSweetAlert(
                    session,
                    title = "Login failed",
                    text = "Please check your username/password!",
                    type = "error")
-                flog.info(paste0("User ", input$user_name, " login failed."), name = "datapack")
+                futile.logger::flog.info(paste0("User ", input$user_name, " login failed."), name = "datapack")
               } )
     
 
@@ -97,9 +100,9 @@ shinyServer(function(input, output, session) {
       user_input$authenticated<-TRUE
       user_input$d2_session<-d2_default_session$clone()
 
-      waiter_show(html = waiting_screen, color = "black")
+      waiter::waiter_show(html = waiting_screen, color = "black")
 
-      flog.info(paste0("User ", user_input$d2_session$username, " logged in."), name = "datapack")
+      futile.logger::flog.info(paste0("User ", user_input$d2_session$username, " logged in."), name = "datapack")
       
       user_input$user_operating_units <- getOperatingUnits(d2_session = user_input$d2_session)
       
@@ -124,7 +127,7 @@ shinyServer(function(input, output, session) {
 
       flog.info(paste0("User operating unit is ", user_input$d2_session$user_orgunit))
 
-      waiter_hide()
+      waiter::waiter_hide()
       
     } 
   })  
@@ -145,7 +148,7 @@ shinyServer(function(input, output, session) {
     if (user_input$authenticated == FALSE) {
       ##### UI code for login page
       fluidPage(
-        use_waiter(),
+        waiter::use_waiter(),
         fluidRow(
           column(width = 2, offset = 5,
                  br(), br(), br(), br(),
@@ -163,7 +166,7 @@ shinyServer(function(input, output, session) {
                              top: 10%;
                              left: 33%;
                              right: 33%;}")),
-        use_waiter(),
+        waiter::use_waiter(),
         sidebarLayout(
           sidebarPanel(
             shinyjs::useShinyjs(),
@@ -210,9 +213,9 @@ shinyServer(function(input, output, session) {
             div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("logout","Logout")),
             tags$hr(),
             h4("Download report:"),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadReport',"PDF"))),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadXLSX','XLSX'))),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",disabled(downloadButton('downloadDocx','DOCX')))
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadReport',"PDF"))),
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadXLSX','XLSX'))),
+            div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadDocx','DOCX')))
           ),
           mainPanel(tabsetPanel(
             id = "main-panel",
@@ -226,12 +229,12 @@ shinyServer(function(input, output, session) {
 })
   
   waiting_screen <- tagList(
-    spin_solar(),
+    waiter::spin_solar(),
     h4("Getting things set up. Please wait...")
   ) 
   
   waiting_screen_pdf <- tagList(
-    spin_hourglass(),
+    waiter::spin_hourglass(),
     h4("Producing a PDF of the selected narratives. Please wait...")
   ) 
 
@@ -339,7 +342,7 @@ shinyServer(function(input, output, session) {
       
       library(rmarkdown)
       out <- rmarkdown::render('report.Rmd', pdf_document(latex_engine = "xelatex"))
-      waiter_hide()  
+      waiter::waiter_hide()  
       file.rename(out, file)
     }
   )
@@ -487,7 +490,7 @@ shinyServer(function(input, output, session) {
         d$partner  %<>% dplyr::rename(country = `Organisation unit`) %>% 
           dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
           dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
-                                         map(.,purrr::pluck(2)) %>% 
+                                         purrr::map(.,purrr::pluck(2)) %>% 
                                          unlist() ) ) %>% 
           dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
           dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))

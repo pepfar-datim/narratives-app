@@ -1,18 +1,11 @@
-
-if (!require("pacman")) {
-  install.packages("pacman",repos="https://cloud.r-project.org") }
-
-pacman::p_load(purrr,magrittr,futile.logger,seqinr,dplyr) 
-
-
 api_version<-function() {"33"}
 
 #Initiate logging
-logger <- flog.logger()
+logger <- futile.logger::flog.logger()
 #Load the local config file
 config <- config::get()
 
-flog.appender(appender.console(), name="narratives")
+futile.logger::flog.appender(futile.logger::appender.console(), name="narratives")
 
 isUSGUser<-function(d2_session) {
   
@@ -92,7 +85,7 @@ getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
     tidyr::unnest_longer(.,"dataElements",simplify = TRUE) %>% 
     dplyr::mutate(de_name = dataElements$shortName, de_uid = dataElements$id) %>% 
     dplyr::select(-id,-dataElements) %>% 
-    mutate(year =   ( stringr::str_split(name," ") ) %>% purrr::map(purrr::pluck(1)) %>% unlist() ) %>% 
+    dplyr::mutate(year =   ( stringr::str_split(name," ") ) %>% purrr::map(purrr::pluck(1)) %>% unlist() ) %>% 
     dplyr::filter(stringr::str_detect(name,"^20")) %>% 
     dplyr::mutate(type = ifelse(stringr::str_detect(name,"Result"),"Results","Targets"))
   
@@ -107,7 +100,7 @@ getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
     dplyr::select(-id,-dataElements) %>% 
     dplyr::rename("technical_area" = name )
   
-  des<- des %>% inner_join(tech_area,by="de_uid") 
+  des<- des %>% dplyr::inner_join(tech_area,by="de_uid") 
   
   getListElement<-function(x,n) tryCatch(str_trim(str_split(x,","))[[n]],  error = function(e) return(NA))
   #Tech area
@@ -210,12 +203,18 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter, d2_session ) 
 getUserMechanisms<-function(d2_session) {
   
   mechs<-paste0(d2_session$base_url,"api/",api_version(),"/categoryOptionCombos?filter=categoryCombo.id:eq:wUpfppgjEza&fields=id,code,name,categoryOptions[id,organisationUnits[id,name]&paging=false") %>% 
-    URLencode(.) %>% 
-    httr::GET(., handle=d2_session$handle) %>% 
+    URLencode(.) %>%
+    httpcache::GET(., handle=d2_session$handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.,simplifyDataFrame = TRUE) %>% 
     purrr::pluck("categoryOptionCombos") %>% 
-    tidyr::unnest( cols=c("categoryOptions"), names_sep=".") %>% 
+    tidyr::unnest( cols=c("categoryOptions"), names_sep=".")
+  
+  #Filter out weird mechanisms with no orgunit
+  mechs_no_ou <- unlist(sapply(mechs$categoryOptions.organisationUnits,function(x) NROW(x) > 0))
+  mechs <- mechs[mechs_no_ou,]
+  
+  mechs %<>%   
     tidyr::unnest(., cols=c("categoryOptions.organisationUnits"), names_sep=".") %>% 
     dplyr::select(mech_code = code,
                   mech_name = name,
@@ -295,7 +294,9 @@ d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
   if ( NROW(d$rows) > 0 ) {
     metadata <- do.call(rbind,
                         lapply(d$metaData$items,
-                               data.frame, stringsAsFactors = FALSE)) %>% mutate(., from = row.names(.))
+                               data.frame, stringsAsFactors = FALSE)) %>% 
+      dplyr::mutate(., from = row.names(.))
+    
     remapMeta <-
       function(x) {
         plyr::mapvalues(x, metadata$from, metadata$name, warn_missing = FALSE)
