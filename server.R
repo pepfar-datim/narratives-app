@@ -3,6 +3,37 @@ source("./utils.R")
 require(futile.logger)
 require(magrittr)
 require(DT)
+require(shinyWidgets)
+require(waiter)
+
+################ OAuth Client information #####################################
+if (interactive()) {
+  # testing url
+  options(shiny.port = 3123)
+  APP_URL <- "http://127.0.0.1:3123/"# This will be your local host path
+} else {
+  # deployed URL
+  APP_URL <- Sys.getenv("APP_URL") #This will be your shiny server path
+}
+
+oauth_app <- httr::oauth_app(Sys.getenv("OAUTH_APPNAME"),
+                             key = Sys.getenv("OAUTH_KEYNAME"),        # dhis2 = Client ID
+                             secret = Sys.getenv("OAUTH_SECRET"), #dhis2 = Client Secret
+                             redirect_uri = APP_URL)
+
+
+oauth_api <- httr::oauth_endpoint(base_url = paste0(getBaseURL(), "uaa/oauth"),
+                                  request = NULL, # Documentation says to leave this NULL for OAuth2
+                                  authorize = "authorize",
+                                  access = "token")
+
+oauth_scope <- "ALL"
+
+
+has_auth_code <- function(params) {
+  
+  return(!is.null(params$code))
+}
 
 
 shinyServer(function(input, output, session) {
@@ -77,23 +108,67 @@ shinyServer(function(input, output, session) {
     user_input$selected_data_elements <-input$des
   })
   
-  observeEvent(input$login_button, {
+  output$ui_redirect <- renderUI({
+    #print(input$login_button_oauth) useful for debugging
+    if (!is.null(input$login_button_oauth)) {
+      if (input$login_button_oauth > 0) {
+        url <-
+          httr::oauth2.0_authorize_url(oauth_api, oauth_app, scope = oauth_scope)
+        redirect <- sprintf("location.replace(\"%s\");", url)
+        tags$script(HTML(redirect))
+      } else  {
+        NULL
+      }
+    } else  {
+      NULL
+    }
+  })
+  
+  observeEvent(input$login_button_oauth > 0, {
     is_logged_in <- FALSE
 
-    tryCatch(  {  datimutils::loginToDATIM(base_url = config$baseurl,
-                                             username = input$user_name,
-                                             password = input$password) },
-               
-              error=function(e) {
-                shinyWidgets::sendSweetAlert(
-                   session,
-                   title = "Login failed",
-                   text = "Please check your username/password!",
-                   type = "error")
-                futile.logger::flog.info(paste0("User ", input$user_name, " login failed."), name = "datapack")
-              } )
     
-
+    #Grabs the code from the url
+    params <- parseQueryString(session$clientData$url_search)
+    #Wait until the auth code actually exists
+    req(has_auth_code(params))
+    
+    #Manually create a token
+    token <- httr::oauth2.0_token(
+      app = oauth_app,
+      endpoint = oauth_api,
+      scope = oauth_scope,
+      use_basic_auth = TRUE,
+      oob_value = APP_URL,
+      cache = FALSE,
+      credentials = httr::oauth2.0_access_token(endpoint = oauth_api,
+                                                app = oauth_app,
+                                                code = params$code,
+                                                use_basic_auth = TRUE)
+    )
+    
+    loginAttempt <- tryCatch({
+      
+      datimutils::loginToDATIMOAuth(base_url =  getBaseURL(),
+                                    token = token,
+                                    app = oauth_app,
+                                    api = oauth_api,
+                                    redirect_uri = APP_URL,
+                                    scope = oauth_scope,
+                                    d2_session_envir = parent.env(environment()))
+      
+    },
+    # This function throws an error if the login is not successful
+    error = function(e) {
+      shinyWidgets::sendSweetAlert(
+        session,
+        title = "Login failed",
+        text = "Please check your username/password!",
+        type = "error")
+      flog.info(paste0("User ", input$user_name, " login failed. ", e$message), name = "datapack")
+    }
+    )
+    
 
     if (exists("d2_default_session")) {
       
@@ -132,13 +207,17 @@ shinyServer(function(input, output, session) {
     } 
   })  
   
+  
+  
   observeEvent(input$logout,{
+    updateQueryString("?", mode = "replace", session = session)
     flog.info(paste0("User ", user_input$d2_session$me$userCredentials$username, " logged out."))
     ready$ok <- FALSE
+    user_input$user_name <- ""
     user_input$authenticated<-FALSE
     user_input$d2_session<-NULL
     gc()
-    
+    session$reload()
   } )
   
   
@@ -180,7 +259,7 @@ shinyServer(function(input, output, session) {
             tags$hr(),
             selectInput(inputId = "fiscal_year", 
                         label= "Fiscal Year",
-                        c("FY21"=2021,"FY20"=2020,"FY19"=2019,"FY18"=2018,",FY17"=2017,"FY16"=2016)),
+                        c("FY22"=2022, "FY21"=2021,"FY20"=2020,"FY19"=2019,"FY18"=2018,"FY17"=2017,"FY16"=2016)),
             tags$hr(),
             selectInput(inputId = "fiscal_quarter", 
                         label= "Fiscal Quarter",
@@ -245,12 +324,12 @@ shinyServer(function(input, output, session) {
     
     wellPanel(fluidRow(
       img(src='pepfar.png', align = "center"),
-      h4("Welcome to the Results Narratives App. Please login with your DATIM credentials:")
+      h4("Welcome to the Results Narratives App. You will be redirected to DATIM to authenticate.")
     ),
     fluidRow(
-      textInput("user_name", "Username: ",width = "600px"),
-      passwordInput("password", "Password:",width = "600px"),
-      actionButton("login_button", "Log in!")
+      actionButton("login_button_oauth", "Log in with DATIM"),
+      uiOutput("ui_hasauth"),
+      uiOutput("ui_redirect")
     ))
   })
   
@@ -535,7 +614,7 @@ shinyServer(function(input, output, session) {
     }}
     
     if (needs_des_filter()) {
-      sendSweetAlert(
+      shinyWidgets::sendSweetAlert(
         session,
         title = "Please add some filters",
         text = "You have selected multiple operating units. Please select between 1 and 5 technical areas.",
