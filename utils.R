@@ -222,7 +222,7 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter, d2_session ) 
 
 getUserMechanisms<-function(d2_session) {
   
-  mechs<-paste0(d2_session$base_url,"api/",api_version(),"/categoryOptionCombos?filter=categoryCombo.id:eq:wUpfppgjEza&fields=id,code,name,categoryOptions[id,organisationUnits[id,name]&paging=false") %>% 
+  mechs<-paste0(d2_session$base_url,"api/categoryOptionCombos?filter=categoryCombo.id:eq:wUpfppgjEza&fields=id,code,name,categoryOptions[id,organisationUnits[id,name]&paging=false") %>% 
     URLencode(.) %>%
     httpcache::GET(., handle=d2_session$handle) %>% 
     httr::content(.,"text") %>% 
@@ -244,7 +244,7 @@ getUserMechanisms<-function(d2_session) {
                   orgunit_id = categoryOptions.organisationUnits.id)
   
 
-  cogs<-paste0(d2_session$base_url,"api/",api_version(),"/dimensions/SH885jaRe0o/items.json?fields=id,shortName") %>% 
+  cogs<-paste0(d2_session$base_url,"api/",api_version(),"/dimensions/SH885jaRe0o/items.json?fields=id,shortName&paging=false") %>% 
     httr::GET(., handle = d2_session$handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
@@ -254,7 +254,7 @@ getUserMechanisms<-function(d2_session) {
   mechs %<>%  dplyr::filter(category_option_id %in% cogs$id)
   
   #Agency map
-  agencies_cos<-paste0(d2_session$base_url,"api/",api_version(),"/categoryOptionGroupSets/bw8KHXzxd9i?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
+  agencies_cos<-paste0(d2_session$base_url,"api/categoryOptionGroupSets/bw8KHXzxd9i?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
    URLencode(.) %>% 
     httr::GET(., handle = d2_session$handle) %>% 
     httr::content(.,"text") %>% 
@@ -268,7 +268,7 @@ getUserMechanisms<-function(d2_session) {
     dplyr::rename(agency_name = name, agency_id = id, category_option_id = categoryOptions.id)
   
   #Partner map
-  partners_cos<-paste0(d2_session$base_url,"api/",api_version(),"/categoryOptionGroupSets/BOyWrF33hiR?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
+  partners_cos<-paste0(d2_session$base_url,"api/categoryOptionGroupSets/BOyWrF33hiR?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
     URLencode(.) %>% 
     httr::GET(., handle = d2_session$handle) %>% 
     httr::content(.,"text") %>% 
@@ -291,13 +291,15 @@ getMechDropDown<-function(mechs,ou_ids = NULL) {
   if (is.null(ou_ids)) {
     dd<-  mechs %>% 
       dplyr::select(mech_code) %>% 
-      dplyr::arrange(mech_code)
+      dplyr::arrange(mech_code) %>% 
+      dplyr::pull(mech_code)
   } else  {
     cat(names(mechs))
     dd<-mechs %>% 
       dplyr::filter(orgunit_id %in% ou_ids) %>% 
       dplyr::select(mech_code) %>% 
-      dplyr::arrange(mech_code)
+      dplyr::arrange(mech_code) %>% 
+      dplyr::pull(mech_code)
     
   }
 
