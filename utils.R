@@ -1,18 +1,31 @@
 
-if (!require("pacman")) {
-  install.packages("pacman",repos="https://cloud.r-project.org") }
-
-pacman::p_load(purrr,magrittr,futile.logger,seqinr,dplyr) 
-
+#' Title getBaseURL()
+#'
+#' @return A base URL to be used throughout the application. If the BASE_URL
+#' environment variable is not set,
+#' this function will return https://www.datim.org,
+#' otherwise, the value of the environment variable.
+#' @export
+#'
+getBaseURL <- function() {
+  if (Sys.getenv("BASE_URL") !=  "")  {
+    return(Sys.getenv("BASE_URL"))
+  } else {
+    futile.logger::flog.warn("No BASE_URL environment variable found. Using www.datim.org")
+    
+    return("https://www.datim.org/")
+    
+  }
+}
 
 api_version<-function() {"33"}
 
 #Initiate logging
-logger <- flog.logger()
+logger <- futile.logger::flog.logger()
 #Load the local config file
 config <- config::get()
 
-flog.appender(appender.console(), name="narratives")
+futile.logger::flog.appender(futile.logger::appender.console(), name="narratives")
 
 isUSGUser<-function(d2_session) {
   
@@ -92,7 +105,7 @@ getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
     tidyr::unnest_longer(.,"dataElements",simplify = TRUE) %>% 
     dplyr::mutate(de_name = dataElements$shortName, de_uid = dataElements$id) %>% 
     dplyr::select(-id,-dataElements) %>% 
-    mutate(year =   ( stringr::str_split(name," ") ) %>% purrr::map(purrr::pluck(1)) %>% unlist() ) %>% 
+    dplyr::mutate(year =   ( stringr::str_split(name," ") ) %>% purrr::map(purrr::pluck(1)) %>% unlist() ) %>% 
     dplyr::filter(stringr::str_detect(name,"^20")) %>% 
     dplyr::mutate(type = ifelse(stringr::str_detect(name,"Result"),"Results","Targets"))
   
@@ -107,7 +120,7 @@ getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
     dplyr::select(-id,-dataElements) %>% 
     dplyr::rename("technical_area" = name )
   
-  des<- des %>% inner_join(tech_area,by="de_uid") 
+  des<- des %>% dplyr::inner_join(tech_area,by="de_uid") 
   
   getListElement<-function(x,n) tryCatch(str_trim(str_split(x,","))[[n]],  error = function(e) return(NA))
   #Tech area
@@ -178,8 +191,8 @@ convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
 
 assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des, d2_session ) {
   
-  this_period<-convertFYQuarterCalendarQuarter(fiscal_year , fiscal_quarter )
-  print("PING!")
+  this_period<-convertFYQuarterCalendarQuarter(fiscal_year, fiscal_quarter )
+
   base_url<-paste0(d2_session$base_url,"api/analytics?")
   
   mechanisms_bit<-paste0("dimension=SH885jaRe0o")
@@ -209,13 +222,19 @@ assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter, d2_session ) 
 
 getUserMechanisms<-function(d2_session) {
   
-  mechs<-paste0(d2_session$base_url,"api/",api_version(),"/categoryOptionCombos?filter=categoryCombo.id:eq:wUpfppgjEza&fields=id,code,name,categoryOptions[id,organisationUnits[id,name]&paging=false") %>% 
-    URLencode(.) %>% 
-    httr::GET(., handle=d2_session$handle) %>% 
+  mechs<-paste0(d2_session$base_url,"api/categoryOptionCombos?filter=categoryCombo.id:eq:wUpfppgjEza&fields=id,code,name,categoryOptions[id,organisationUnits[id,name]&paging=false") %>% 
+    URLencode(.) %>%
+    httpcache::GET(., handle=d2_session$handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.,simplifyDataFrame = TRUE) %>% 
     purrr::pluck("categoryOptionCombos") %>% 
-    tidyr::unnest( cols=c("categoryOptions"), names_sep=".") %>% 
+    tidyr::unnest( cols=c("categoryOptions"), names_sep=".")
+  
+  #Filter out weird mechanisms with no orgunit
+  mechs_no_ou <- unlist(sapply(mechs$categoryOptions.organisationUnits,function(x) NROW(x) > 0))
+  mechs <- mechs[mechs_no_ou,]
+  
+  mechs %<>%   
     tidyr::unnest(., cols=c("categoryOptions.organisationUnits"), names_sep=".") %>% 
     dplyr::select(mech_code = code,
                   mech_name = name,
@@ -225,7 +244,7 @@ getUserMechanisms<-function(d2_session) {
                   orgunit_id = categoryOptions.organisationUnits.id)
   
 
-  cogs<-paste0(d2_session$base_url,"api/",api_version(),"/dimensions/SH885jaRe0o/items.json?fields=id,shortName") %>% 
+  cogs<-paste0(d2_session$base_url,"api/",api_version(),"/dimensions/SH885jaRe0o/items.json?fields=id,shortName&paging=false") %>% 
     httr::GET(., handle = d2_session$handle) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
@@ -235,7 +254,7 @@ getUserMechanisms<-function(d2_session) {
   mechs %<>%  dplyr::filter(category_option_id %in% cogs$id)
   
   #Agency map
-  agencies_cos<-paste0(d2_session$base_url,"api/",api_version(),"/categoryOptionGroupSets/bw8KHXzxd9i?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
+  agencies_cos<-paste0(d2_session$base_url,"api/categoryOptionGroupSets/bw8KHXzxd9i?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
    URLencode(.) %>% 
     httr::GET(., handle = d2_session$handle) %>% 
     httr::content(.,"text") %>% 
@@ -249,7 +268,7 @@ getUserMechanisms<-function(d2_session) {
     dplyr::rename(agency_name = name, agency_id = id, category_option_id = categoryOptions.id)
   
   #Partner map
-  partners_cos<-paste0(d2_session$base_url,"api/",api_version(),"/categoryOptionGroupSets/BOyWrF33hiR?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
+  partners_cos<-paste0(d2_session$base_url,"api/categoryOptionGroupSets/BOyWrF33hiR?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
     URLencode(.) %>% 
     httr::GET(., handle = d2_session$handle) %>% 
     httr::content(.,"text") %>% 
@@ -272,13 +291,15 @@ getMechDropDown<-function(mechs,ou_ids = NULL) {
   if (is.null(ou_ids)) {
     dd<-  mechs %>% 
       dplyr::select(mech_code) %>% 
-      dplyr::arrange(mech_code)
+      dplyr::arrange(mech_code) %>% 
+      dplyr::pull(mech_code)
   } else  {
     cat(names(mechs))
     dd<-mechs %>% 
       dplyr::filter(orgunit_id %in% ou_ids) %>% 
       dplyr::select(mech_code) %>% 
-      dplyr::arrange(mech_code)
+      dplyr::arrange(mech_code) %>% 
+      dplyr::pull(mech_code)
     
   }
 
@@ -287,6 +308,7 @@ getMechDropDown<-function(mechs,ou_ids = NULL) {
 
 d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
 
+  print(url)
   d<-url %>% 
     httr::GET(., handle = d2_session$handle) %>% 
     httr::content(.,"text") %>% 
@@ -295,7 +317,9 @@ d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
   if ( NROW(d$rows) > 0 ) {
     metadata <- do.call(rbind,
                         lapply(d$metaData$items,
-                               data.frame, stringsAsFactors = FALSE)) %>% mutate(., from = row.names(.))
+                               data.frame, stringsAsFactors = FALSE)) %>% 
+      dplyr::mutate(., from = row.names(.))
+    
     remapMeta <-
       function(x) {
         plyr::mapvalues(x, metadata$from, metadata$name, warn_missing = FALSE)
@@ -308,4 +332,15 @@ d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
     return(d) } else {
       return(NULL)
     }
+}
+
+
+getVersionInfo <- function() {
+  
+  currDCF <- read.dcf("DESCRIPTION")
+  currVersion <- currDCF[1, "Version"]
+  
+  paste0("Version: ", currVersion) %>%
+    paste('<div style="font-size:small;text-align: center;"><p>', .) %>%
+    paste(., "</p></div>")
 }
