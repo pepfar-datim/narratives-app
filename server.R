@@ -207,8 +207,6 @@ shinyServer(function(input, output, session) {
     } 
   })  
   
-  
-  
   observeEvent(input$logout,{
     updateQueryString("?", mode = "replace", session = session)
     flog.info(paste0("User ", user_input$d2_session$me$userCredentials$username, " logged out."))
@@ -605,7 +603,6 @@ shinyServer(function(input, output, session) {
     needs_des_filter<- function() {
       
       if ( is.null(input$ou) | length(input$ou) > 1 ) {
-      
       if ( is.null(input$des) ) { return(TRUE) }
       if ( length(input$des) < 6 ) {return(FALSE)}
       
@@ -659,7 +656,7 @@ shinyServer(function(input, output, session) {
       d$usg<-d$usg %>% dplyr::filter(technical_area %in% input$des)
     }
     
-    if (!is.null(input$mechs) & is.null(d$partner)) {
+    if (!is.null(input$mechs) & !is.null(d$partner)) {
       
       d$partner<-d$partner %>%  dplyr::filter(mech_code %in% input$mechs)
       
