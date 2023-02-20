@@ -191,8 +191,8 @@ convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
 
 assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des, d2_session ) {
   
-  this_period<-convertFYQuarterCalendarQuarter(fiscal_year , fiscal_quarter )
-  print("PING!")
+  this_period<-convertFYQuarterCalendarQuarter(fiscal_year, fiscal_quarter )
+
   base_url<-paste0(d2_session$base_url,"api/analytics?")
   
   mechanisms_bit<-paste0("dimension=SH885jaRe0o")
