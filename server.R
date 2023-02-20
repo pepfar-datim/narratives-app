@@ -7,6 +7,7 @@ require(shinyWidgets)
 require(waiter)
 
 ################ OAuth Client information #####################################
+
 if (interactive()) {
   # testing url
   options(shiny.port = 3123)
@@ -127,7 +128,6 @@ shinyServer(function(input, output, session) {
   observeEvent(input$login_button_oauth > 0, {
     is_logged_in <- FALSE
 
-    
     #Grabs the code from the url
     params <- parseQueryString(session$clientData$url_search)
     #Wait until the auth code actually exists
@@ -146,7 +146,7 @@ shinyServer(function(input, output, session) {
                                                 code = params$code,
                                                 use_basic_auth = TRUE)
     )
-    
+
     loginAttempt <- tryCatch({
       
       datimutils::loginToDATIMOAuth(base_url =  getBaseURL(),
@@ -169,7 +169,7 @@ shinyServer(function(input, output, session) {
     }
     )
     
-
+    waiter::waiter_show(html = waiting_screen, color = "black")
     if (exists("d2_default_session")) {
       
       user_input$authenticated<-TRUE
@@ -328,7 +328,10 @@ shinyServer(function(input, output, session) {
       actionButton("login_button_oauth", "Log in with DATIM"),
       uiOutput("ui_hasauth"),
       uiOutput("ui_redirect")
-    ))
+    ),
+    tags$hr(),
+    fluidRow(HTML(getVersionInfo()))
+    )
   })
   
   
