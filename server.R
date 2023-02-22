@@ -503,7 +503,7 @@ shinyServer(function(input, output, session) {
       countries<-
         if (is.null(input$ou)) {
           user_input$user_operating_units %>% 
-            pull(country_id)
+            dplyr::pull(country_id)
         } else {
           dplyr::filter(user_input$user_operating_units
                         ,ou_id %in% input$ou) %>% 
