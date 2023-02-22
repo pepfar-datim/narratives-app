@@ -1,3 +1,6 @@
+# Version 0.0.3
+* Fixes issue with loading screen.
+
 # Version 0.0.2
 
 * Add support for FY23
