@@ -57,6 +57,7 @@ shinyServer(function(input, output, session) {
                                selected_data_elements = NULL,
                                selected_mechanisms = NULL,
                                has_des_filter = FALSE,
+                               metadata_loaded = FALSE,
                                d2_session = NULL)
   
   selected_ous<-reactiveValues(selected_ous = NULL)
@@ -169,22 +170,22 @@ shinyServer(function(input, output, session) {
     }
     )
     
-    waiter::waiter_show(html = waiting_screen, color = "black")
     if (exists("d2_default_session")) {
+      
+      shinyWidgets::sendSweetAlert(
+        session,
+        title = "Loading metadata",
+        text = "Getting things setup. Please wait.",
+        type = "info",
+        btn_labels = NA)
       
       user_input$authenticated<-TRUE
       user_input$d2_session<-d2_default_session$clone()
-
-      waiter::waiter_show(html = waiting_screen, color = "black")
-
       futile.logger::flog.info(paste0("User ", user_input$d2_session$username, " logged in."), name = "datapack")
-      
       user_input$user_operating_units <- getOperatingUnits(d2_session = user_input$d2_session)
-      
       user_input$operating_units_dropdown <- user_input$user_operating_units %>% 
         dplyr::select(ou,ou_id) %>% 
         tibble::deframe()
-      
       user_input$is_global_user <- user_input$user_operating_unit == "ybg3MO3hcf4"
       
       user_input$is_usg_user <- isUSGUser(d2_session = user_input$d2_session)
@@ -201,9 +202,8 @@ shinyServer(function(input, output, session) {
         dplyr::arrange(technical_area)
 
       flog.info(paste0("User operating unit is ", user_input$d2_session$user_orgunit))
-
-      waiter::waiter_hide()
-      
+      user_input$metadata_loaded <- TRUE
+      shinyWidgets::closeSweetAlert(session)
     } 
   })  
   
@@ -225,85 +225,17 @@ shinyServer(function(input, output, session) {
     if (user_input$authenticated == FALSE) {
       ##### UI code for login page
       fluidPage(
-        waiter::use_waiter(),
         fluidRow(
           column(width = 2, offset = 5,
                  br(), br(), br(), br(),
-                 uiOutput("uiLogin"),
-                 uiOutput("pass")
+                 uiOutput("uiLogin")
           )
         )
       )
     } else {
-      
-      
-      fluidPage(
-        tags$head(tags$style(".shiny-notification {
-                             position: fixed;
-                             top: 10%;
-                             left: 33%;
-                             right: 33%;}")),
-        waiter::use_waiter(),
-        sidebarLayout(
-          sidebarPanel(
-            shinyjs::useShinyjs(),
-            id = "side-panel",
-            tags$hr(),
-            selectInput(inputId = "ou", 
-                        label= "Operating Unit",
-                        user_input$operating_units_dropdown,
-                        multiple = TRUE,
-                        selected = ifelse(user_input$user_operating_units == "ybg3MO3hcf4",NULL,user_input$user_operating_units)),
-            tags$hr(),
-            selectInput(inputId = "fiscal_year", 
-                        label= "Fiscal Year",
-                        c("FY23" = 2023, "FY22"= 2022, "FY21"= 2021,"FY20" = 2020,"FY19" = 2019,"FY18" = 2018,"FY17" = 2017,"FY16" = 2016),
-                        selected = getCurrentFiscalYear()),
-            tags$hr(),
-            selectInput(inputId = "fiscal_quarter", 
-                        label= "Fiscal Quarter",
-                        c(1,2,3,4),
-                        selected=getCurrentFiscalQuarter()),
-            tags$hr(),
-            selectizeInput(inputId = "mechs", 
-                        label= "Mechanisms",
-                        choices = user_input$mech_dropdown,
-                        multiple = TRUE,
-                        selected = NULL,
-                        options = list(placeholder = 'Select one or more mechanisms:')),
-            tags$hr(),
-            selectizeInput(inputId = "des",
-                        label = "Technical areas",
-                        choices = user_input$data_elements_dropdown,
-                        multiple = TRUE,
-                        selected = NULL,
-                        
-                        options = list(placeholder = 'Select technical areas:', maxItems = 5)),
-            tags$hr(),
-            textInput(inputId = "free_text_filter",
-                               label = "Search:",
-                               placeholder = "Free text search:"),
-            tags$hr(),
-            conditionalPanel(checkboxInput("includeUSGNarratives",label = "Include USG Narratives"),condition = user_input$is_usg_user),
-            tags$hr(),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("fetch","Get Narratives")),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("reset_input","Reset")),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("logout","Logout")),
-            tags$hr(),
-            h4("Download report:"),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadReport',"PDF"))),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadXLSX','XLSX'))),
-            div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadDocx','DOCX')))
-          ),
-          mainPanel(tabsetPanel(
-            id = "main-panel",
-            type = "tabs",
-            tabPanel("Narratives", dataTableOutput('narratives')),
-            tabPanel("USG Narratives",dataTableOutput('usg_narratives'))
-            
-          ))
-        ))
-  }
+       uiOutput("main")
+     }
+
 })
   
   waiting_screen <- tagList(
@@ -335,6 +267,77 @@ shinyServer(function(input, output, session) {
     )
   })
   
+  
+  output$main <- renderUI({
+    
+    fluidPage(
+      tags$head(tags$style(".shiny-notification {
+                             position: fixed;
+                             top: 10%;
+                             left: 33%;
+                             right: 33%;}")),
+      waiter::use_waiter(),
+      sidebarLayout(
+        sidebarPanel(
+          shinyjs::useShinyjs(),
+          id = "side-panel",
+          tags$hr(),
+          selectInput(inputId = "ou", 
+                      label= "Operating Unit",
+                      user_input$operating_units_dropdown,
+                      multiple = TRUE,
+                      selected = ifelse(user_input$user_operating_units == "ybg3MO3hcf4",NULL,user_input$user_operating_units)),
+          tags$hr(),
+          selectInput(inputId = "fiscal_year", 
+                      label= "Fiscal Year",
+                      c("FY23" = 2023, "FY22"= 2022, "FY21"= 2021,"FY20" = 2020,"FY19" = 2019,"FY18" = 2018,"FY17" = 2017,"FY16" = 2016),
+                      selected = getCurrentFiscalYear()),
+          tags$hr(),
+          selectInput(inputId = "fiscal_quarter", 
+                      label= "Fiscal Quarter",
+                      c(1,2,3,4),
+                      selected=getCurrentFiscalQuarter()),
+          tags$hr(),
+          selectizeInput(inputId = "mechs", 
+                         label= "Mechanisms",
+                         choices = user_input$mech_dropdown,
+                         multiple = TRUE,
+                         selected = NULL,
+                         options = list(placeholder = 'Select one or more mechanisms:')),
+          tags$hr(),
+          selectizeInput(inputId = "des",
+                         label = "Technical areas",
+                         choices = user_input$data_elements_dropdown,
+                         multiple = TRUE,
+                         selected = NULL,
+                         
+                         options = list(placeholder = 'Select technical areas:', maxItems = 5)),
+          tags$hr(),
+          textInput(inputId = "free_text_filter",
+                    label = "Search:",
+                    placeholder = "Free text search:"),
+          tags$hr(),
+          conditionalPanel(checkboxInput("includeUSGNarratives",label = "Include USG Narratives"),condition = user_input$is_usg_user),
+          tags$hr(),
+          div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("fetch","Get Narratives")),
+          div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("reset_input","Reset")),
+          div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("logout","Logout")),
+          tags$hr(),
+          h4("Download report:"),
+          div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadReport',"PDF"))),
+          div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadXLSX','XLSX'))),
+          div(style = "display: inline-block; vertical-align:top; width: 80 px;",shinyjs::disabled(downloadButton('downloadDocx','DOCX')))
+        ),
+        mainPanel(tabsetPanel(
+          id = "main-panel",
+          type = "tabs",
+          tabPanel("Narratives", dataTableOutput('narratives')),
+          tabPanel("USG Narratives",dataTableOutput('usg_narratives'))
+          
+        ))
+      ))
+    
+  })
   
   #Outputs 
   output$narratives <- DT::renderDataTable({

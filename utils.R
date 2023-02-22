@@ -173,9 +173,9 @@ getCurrentFiscalQuarter<-function(this_date = Sys.Date()) {
 convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
   
   fiscal_year<-as.integer(fiscal_year)
-  #print(paste0("Fiscal year",fiscal_year))
+
   fiscal_quarter<-as.integer(fiscal_quarter)
-  #print(paste("Fiscal quarter",fiscal_quarter))
+
   if ( !( fiscal_quarter %in% c(1,2,3,4) ) ) {stop("Invalid fiscal quarter")} 
   if (fiscal_quarter == 1) {
     calendar_quarter  <-  4
@@ -308,7 +308,6 @@ getMechDropDown<-function(mechs,ou_ids = NULL) {
 
 d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
 
-  #print(url)
   d<-url %>% 
     httr::GET(., handle = d2_session$handle) %>% 
     httr::content(.,"text") %>% 
