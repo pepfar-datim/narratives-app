@@ -171,38 +171,31 @@ shinyServer(function(input, output, session) {
     
     waiter::waiter_show(html = waiting_screen, color = "black")
     if (exists("d2_default_session")) {
+      shinyWidgets::sendSweetAlert(
+        session,
+        title = "Loading metadata",
+        text = "Getting things setup. Please wait.",
+        type = "info",
+        btn_labels = NA)
       
       user_input$authenticated<-TRUE
       user_input$d2_session<-d2_default_session$clone()
-
-      waiter::waiter_show(html = waiting_screen, color = "black")
-
       futile.logger::flog.info(paste0("User ", user_input$d2_session$username, " logged in."), name = "datapack")
-      
       user_input$user_operating_units <- getOperatingUnits(d2_session = user_input$d2_session)
-      
       user_input$operating_units_dropdown <- user_input$user_operating_units %>% 
         dplyr::select(ou,ou_id) %>% 
         tibble::deframe()
-      
       user_input$is_global_user <- user_input$user_operating_unit == "ybg3MO3hcf4"
-      
       user_input$is_usg_user <- isUSGUser(d2_session = user_input$d2_session)
-      
       user_input$user_mechs<-getUserMechanisms(d2_session = user_input$d2_session) 
-      
       user_input$mech_dropdown <- getMechDropDown(user_input$user_mechs,NULL)
-      
       user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year, d2_session = user_input$d2_session)
-      
       user_input$data_elements_dropdown <- user_input$partner_data_elements %>% 
         dplyr::select(technical_area) %>% 
         dplyr::distinct() %>% 
         dplyr::arrange(technical_area)
-
       flog.info(paste0("User operating unit is ", user_input$d2_session$user_orgunit))
-
-      waiter::waiter_hide()
+      shinyWidgets::closeSweetAlert(session)
       
     } 
   })  
