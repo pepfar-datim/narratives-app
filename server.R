@@ -292,13 +292,22 @@ shinyServer(function(input, output, session) {
             id = "main-panel",
             type = "tabs",
             tabPanel("Narratives", dataTableOutput('narratives')),
-            tabPanel("USG Narratives",dataTableOutput('usg_narratives'))
+            tabPanel("USG Narratives",dataTableOutput('usg_narratives')),
+            tabPanel("Partner Sentiment",
+            fluidRow(column(width=8,div(HTML(paste0("<p>The sentiment analysis is based on the ",
+            "<a href='https://emilhvitfeldt.github.io/textdata/reference/lexicon_bing.html'>Bing</a> dataset.",
+            " Words are classified in a binary manner, e.g. either positive or negative.",
+            " The sentiment index has been calculated by dividing the total number of positive words matched in the text ",
+            " by the overall number of words found in sentiment table."))))),
+            fluidRow(column(width = 12, div(rpivotTable::rpivotTableOutput({"partner_sentiment"})))))
             
           ))
         ))
   }
 })
   
+  
+
   waiting_screen <- tagList(
     waiter::spin_solar(),
     h4("Getting things set up. Please wait...")
@@ -310,6 +319,19 @@ shinyServer(function(input, output, session) {
   ) 
 
   
+  output$partner_sentiment <- rpivotTable::renderRpivotTable({
+    vr<-filtered_narratives()
+    
+    if (!inherits(vr, "error") & !is.null(vr)) {
+      if (is.null(vr$partner)) {
+        return(NULL)
+      }
+      generateSentimentPivot(vr)
+    } else {
+      NULL
+    }
+  })
+    
   # password entry UI componenets:
   #   username and password text fields, login button
   output$uiLogin <- renderUI({
@@ -568,6 +590,7 @@ shinyServer(function(input, output, session) {
                                          unlist() ) ) %>% 
           dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
           dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+        
       }
 
       

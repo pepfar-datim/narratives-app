@@ -100,6 +100,43 @@
         "Built": "R 4.2.2; x86_64-pc-linux-gnu; 2022-12-02 15:33:10 UTC; unix"
       }
     },
+    "Matrix": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Package": "Matrix",
+        "Version": "1.5-1",
+        "Date": "2022-09-12",
+        "Priority": "recommended",
+        "Title": "Sparse and Dense Matrix Classes and Methods",
+        "Contact": "Matrix-authors@R-project.org",
+        "Maintainer": "Martin Maechler <mmaechler+Matrix@gmail.com>",
+        "Authors@R": "c(person(\"Douglas\", \"Bates\", role = \"aut\")\n , person(\"Martin\", \"Maechler\", role = c(\"aut\", \"cre\"),\n          email = \"mmaechler+Matrix@gmail.com\",\n          comment = c(ORCID = \"0000-0002-8685-9910\"))\n , person(\"Mikael\", \"Jagan\", role = \"aut\",\n          comment = c(ORCID = \"0000-0002-3542-2938\"))\n , person(\"Timothy A.\", \"Davis\", role = \"ctb\",\n          comment = c(\"SuiteSparse and 'cs' C libraries, notably CHOLMOD and AMD\",\n\t              \"collaborators listed in dir(pattern=\\\"^[A-Z]+[.]txt$\\\", full.names=TRUE, system.file(\\\"doc\\\", \\\"SuiteSparse\\\", package=\\\"Matrix\\\"))\"))\n , person(\"Jens\", \"Oehlschlägel\", role = \"ctb\",\n          comment = \"initial nearPD()\")\n , person(\"Jason\", \"Riedy\", role = \"ctb\",\n          comment = c(\"condest() and onenormest() for octave\",\n \t  \t      \"Copyright: Regents of the University of California\"))\n , person(\"R Core Team\", role = \"ctb\",\n          comment = \"base R matrix implementation\")\n )",
+        "Description": "A rich hierarchy of matrix classes, including triangular,\n   symmetric, and diagonal matrices, both dense and sparse and with\n   pattern, logical and numeric entries.   Numerous methods for and\n   operations on these matrices, using 'LAPACK' and 'SuiteSparse' libraries.",
+        "Depends": "R (>= 3.5.0)",
+        "Imports": "methods, graphics, grid, stats, utils, lattice",
+        "Suggests": "expm, MASS",
+        "Enhances": "MatrixModels, graph, SparseM, sfsmisc, igraph, maptools, sp,\nspdep",
+        "EnhancesNote": "line 2: for \"Rd xrefs\"",
+        "Encoding": "UTF-8",
+        "LazyData": "no",
+        "LazyDataNote": "not possible, since we use data/*.R *and* our classes",
+        "BuildResaveData": "no",
+        "License": "GPL (>= 2) | file LICENCE",
+        "URL": "https://Matrix.R-forge.R-project.org/,\nhttps://Matrix.R-forge.R-project.org/doxygen/",
+        "BugReports": "https://R-forge.R-project.org/tracker/?atid=294&group_id=61",
+        "NeedsCompilation": "yes",
+        "Packaged": "2022-09-12 13:54:06 UTC; maechler",
+        "Author": "Douglas Bates [aut],\n  Martin Maechler [aut, cre] (<https://orcid.org/0000-0002-8685-9910>),\n  Mikael Jagan [aut] (<https://orcid.org/0000-0002-3542-2938>),\n  Timothy A. Davis [ctb] (SuiteSparse and 'cs' C libraries, notably\n    CHOLMOD and AMD, collaborators listed in\n    dir(pattern=\"^[A-Z]+[.]txt$\", full.names=TRUE, system.file(\"doc\",\n    \"SuiteSparse\", package=\"Matrix\"))),\n  Jens Oehlschlägel [ctb] (initial nearPD()),\n  Jason Riedy [ctb] (condest() and onenormest() for octave, Copyright:\n    Regents of the University of California),\n  R Core Team [ctb] (base R matrix implementation)",
+        "Repository": "CRAN",
+        "Date/Publication": "2022-09-13 08:10:11 UTC",
+        "Built": "R 4.2.2; x86_64-pc-linux-gnu; 2022-12-02 15:33:29 UTC; unix"
+      }
+    },
     "R6": {
       "Source": "CRAN",
       "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
@@ -155,6 +192,34 @@
         "Repository": "CRAN",
         "Date/Publication": "2022-07-08 23:10:06 UTC",
         "Built": "R 4.2.1; x86_64-pc-linux-gnu; 2022-08-15 14:08:32 UTC; unix"
+      }
+    },
+    "SnowballC": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Package": "SnowballC",
+        "Type": "Package",
+        "Version": "0.7.0",
+        "Date": "2020-04-01",
+        "Title": "Snowball Stemmers Based on the C 'libstemmer' UTF-8 Library",
+        "Authors@R": "person(\"Milan\", \"Bouchet-Valat\", email=\"nalimilan@club.fr\",\n                  role=c(\"aut\", \"cre\"))",
+        "Description": "An R interface to the C 'libstemmer' library that implements\n  Porter's word stemming algorithm for collapsing words to a common\n  root to aid comparison of vocabulary. Currently supported languages are\n  Danish, Dutch, English, Finnish, French, German, Hungarian, Italian,\n  Norwegian, Portuguese, Romanian, Russian, Spanish, Swedish\n  and Turkish.",
+        "License": "BSD_3_clause + file LICENSE",
+        "Copyright": "Dr Martin Porter (2001) and Richard Boulton (2004, 2005) for\nthe 'libstemmer' C library, and Milan Bouchet-Valat (2013) for\nthe R package contents.",
+        "URL": "https://github.com/nalimilan/R.TeMiS",
+        "BugReports": "https://github.com/nalimilan/R.TeMiS/issues",
+        "NeedsCompilation": "yes",
+        "Packaged": "2020-04-01 16:24:55 UTC; milan",
+        "Author": "Milan Bouchet-Valat [aut, cre]",
+        "Maintainer": "Milan Bouchet-Valat <nalimilan@club.fr>",
+        "Repository": "CRAN",
+        "Date/Publication": "2020-04-01 16:50:02 UTC",
+        "Built": "R 4.2.2; x86_64-pc-linux-gnu; 2023-02-23 06:40:54 UTC; unix"
       }
     },
     "ade4": {
@@ -1256,6 +1321,71 @@
         "Built": "R 4.2.1; ; 2022-08-18 06:45:49 UTC; unix"
       }
     },
+    "hunspell": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Package": "hunspell",
+        "Type": "Package",
+        "Title": "High-Performance Stemmer, Tokenizer, and Spell Checker",
+        "Version": "3.0.2",
+        "Depends": "R (>= 3.0.2)",
+        "Encoding": "UTF-8",
+        "Authors@R": "c(\n    person(\"Jeroen\", \"Ooms\", ,\"jeroen@berkeley.edu\", role = c(\"aut\", \"cre\")),\n    person(\"Authors of libhunspell\", role = \"cph\", comment = \"see AUTHORS file\"))",
+        "Description": "Low level spell checker and morphological analyzer based on the \n    famous 'hunspell' library <https://hunspell.github.io>. The package can analyze\n    or check individual words as well as parse text, latex, html or xml documents.\n    For a more user-friendly interface use the 'spelling' package which builds on\n    this package to automate checking of files, documentation and vignettes in all\n    common formats.",
+        "License": "GPL-2 | LGPL-2.1 | MPL-1.1",
+        "URL": "https://docs.ropensci.org/hunspell/ (docs),\nhttps://github.com/ropensci/hunspell (devel)\nhttps://hunspell.github.io (upstream)",
+        "BugReports": "https://github.com/ropensci/hunspell/issues",
+        "Imports": "Rcpp, digest",
+        "LinkingTo": "Rcpp (>= 0.12.12)",
+        "Suggests": "spelling, testthat, pdftools, janeaustenr, wordcloud2, knitr,\nstopwords, rmarkdown",
+        "VignetteBuilder": "knitr",
+        "RoxygenNote": "7.2.1",
+        "Language": "en-US",
+        "NeedsCompilation": "yes",
+        "Packaged": "2022-09-04 15:04:08 UTC; jeroen",
+        "Author": "Jeroen Ooms [aut, cre],\n  Authors of libhunspell [cph] (see AUTHORS file)",
+        "Maintainer": "Jeroen Ooms <jeroen@berkeley.edu>",
+        "Repository": "CRAN",
+        "Date/Publication": "2022-09-04 15:40:02 UTC",
+        "Built": "R 4.2.2; x86_64-pc-linux-gnu; 2023-02-23 06:40:33 UTC; unix"
+      }
+    },
+    "janeaustenr": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Package": "janeaustenr",
+        "Title": "Jane Austen's Complete Novels",
+        "Version": "1.0.0",
+        "Authors@R": "\n    person(\"Julia\", \"Silge\", , \"julia.silge@gmail.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-3671-836X\"))",
+        "Description": "Full texts for Jane Austen's 6 completed novels, ready for\n    text analysis. These novels are \"Sense and Sensibility\", \"Pride and\n    Prejudice\", \"Mansfield Park\", \"Emma\", \"Northanger Abbey\", and\n    \"Persuasion\".",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/juliasilge/janeaustenr",
+        "BugReports": "https://github.com/juliasilge/janeaustenr/issues",
+        "Depends": "R (>= 3.5)",
+        "Suggests": "dplyr, testthat",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "RoxygenNote": "7.2.1",
+        "NeedsCompilation": "no",
+        "Packaged": "2022-08-26 22:14:26 UTC; juliasilge",
+        "Author": "Julia Silge [aut, cre] (<https://orcid.org/0000-0002-3671-836X>)",
+        "Maintainer": "Julia Silge <julia.silge@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2022-08-26 22:32:06 UTC",
+        "Built": "R 4.2.2; ; 2023-02-23 06:40:52 UTC; unix"
+      }
+    },
     "jquerylib": {
       "Source": "CRAN",
       "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
@@ -2053,6 +2183,37 @@
         "Built": "R 4.2.1; ; 2022-09-26 09:32:11 UTC; unix"
       }
     },
+    "rpivotTable": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Package": "rpivotTable",
+        "Title": "Build Powerful Pivot Tables and Dynamically Slice & Dice your\nData",
+        "Date": "2018-01-29",
+        "Version": "0.3.0",
+        "Authors@R": "c(\n    person(\"Enzo\", \"Martoglio\", role = c(\"aut\", \"cre\"),  email = \"enzo@smartinsightsfromdata.com\"),\n    person(\"Nicolas\", \"Kruchten\", role = c(\"ctb\", \"cph\"),  email = \"nicolas@kruchten.com\"),\n    person(\"Nagarajan\", \"Chinnasamy\", role = c(\"ctb\", \"cph\")),\n    person(\"Kenton\", \"Russell\", role = c(\"ctb\"), email = \"kent.russell@timelyportfolio.com\")\n    )",
+        "Maintainer": "Enzo Martoglio  <enzo@smartinsightsfromdata.com>",
+        "Description": "Build powerful pivot tables (aka Pivot Grid, Pivot Chart, Cross-Tab)\n    and dynamically slice & dice / drag 'n' drop your data. 'rpivotTable' is a\n    wrapper of 'pivottable', a powerful open-source Pivot Table library implemented\n    in 'JavaScript' by Nicolas Kruchten. Aligned to 'pivottable' v2.19.0.",
+        "Depends": "R (>= 3.2.0)",
+        "Imports": "htmlwidgets (>= 0.5)",
+        "Suggests": "testthat, htmltools, knitr, rmarkdown, devtools, dplyr,\ndata.table",
+        "Enhances": "shiny (>= 0.12)",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/smartinsightsfromdata,\nhttp://smartinsightsfromdata.github.io",
+        "VignetteBuilder": "knitr",
+        "RoxygenNote": "6.0.1",
+        "NeedsCompilation": "no",
+        "Packaged": "2018-01-30 19:37:55 UTC; e",
+        "Author": "Enzo Martoglio [aut, cre],\n  Nicolas Kruchten [ctb, cph],\n  Nagarajan Chinnasamy [ctb, cph],\n  Kenton Russell [ctb]",
+        "Repository": "CRAN",
+        "Date/Publication": "2018-01-30 19:45:09 UTC",
+        "Built": "R 4.2.2; ; 2022-11-23 06:36:25 UTC; unix"
+      }
+    },
     "sass": {
       "Source": "CRAN",
       "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
@@ -2190,7 +2351,7 @@
       "description": {
         "Package": "shinyWidgets",
         "Title": "Custom Inputs Widgets for Shiny",
-        "Version": "0.7.3",
+        "Version": "0.7.5",
         "Authors@R": "c(\n  person(\"Victor\", \"Perrier\", email = \"victor.perrier@dreamrs.fr\", role = c(\"aut\", \"cre\", \"cph\")),\n  person(\"Fanny\", \"Meyer\", role = \"aut\"),\n  person(\"David\", \"Granjon\", role = \"aut\"),\n  person(\"Ian\", \"Fellows\", role = \"ctb\", comment = \"Methods for mutating vertical tabs & updateMultiInput\"),\n  person(\"Wil\", \"Davis\", role = \"ctb\", comment = \"numericRangeInput function\"),\n  person(\"Spencer\", \"Matthews\", role = \"ctb\", comment = \"autoNumeric methods\"),\n  person(family = \"JavaScript and CSS libraries authors\", role = c(\"ctb\", \"cph\"), comment = \"All authors are listed in LICENSE.md\")\n  )",
         "Description": "Collection of custom input controls and user interface components for 'Shiny' applications. \n  Give your applications a unique and colorful style !",
         "URL": "https://github.com/dreamRs/shinyWidgets,\nhttps://dreamrs.github.io/shinyWidgets/",
@@ -2203,12 +2364,12 @@
         "Imports": "anytime, bslib, sass, shiny (>= 1.6.0), htmltools (>= 0.5.1),\njsonlite, grDevices, rlang",
         "Suggests": "shinydashboard, testthat, covr, shinydashboardPlus (>=\n2.0.0), bs4Dash, argonR, argonDash, tablerDash, ggplot2, DT,\nscales",
         "NeedsCompilation": "no",
-        "Packaged": "2022-08-31 15:29:24 UTC; victor",
+        "Packaged": "2022-11-17 09:38:50 UTC; perri",
         "Author": "Victor Perrier [aut, cre, cph],\n  Fanny Meyer [aut],\n  David Granjon [aut],\n  Ian Fellows [ctb] (Methods for mutating vertical tabs &\n    updateMultiInput),\n  Wil Davis [ctb] (numericRangeInput function),\n  Spencer Matthews [ctb] (autoNumeric methods),\n  JavaScript and CSS libraries authors [ctb, cph] (All authors are listed\n    in LICENSE.md)",
         "Maintainer": "Victor Perrier <victor.perrier@dreamrs.fr>",
         "Repository": "CRAN",
-        "Date/Publication": "2022-08-31 18:20:02 UTC",
-        "Built": "R 4.2.1; ; 2022-10-04 08:38:48 UTC; unix"
+        "Date/Publication": "2022-11-17 18:40:02 UTC",
+        "Built": "R 4.2.2; ; 2022-12-13 13:42:55 UTC; unix"
       }
     },
     "shinyjs": {
@@ -2531,6 +2692,41 @@
         "Built": "R 4.2.1; ; 2022-08-31 13:03:24 UTC; unix"
       }
     },
+    "tidytext": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Type": "Package",
+        "Package": "tidytext",
+        "Title": "Text Mining using 'dplyr', 'ggplot2', and Other Tidy Tools",
+        "Version": "0.3.4",
+        "Authors@R": "c(\n    person(\"Gabriela\", \"De Queiroz\", , \"gabidequeiroz@gmail.com\", role = \"ctb\"),\n    person(\"Colin\", \"Fay\", , \"contact@colinfay.me\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0001-7343-1846\")),\n    person(\"Emil\", \"Hvitfeldt\", , \"emilhhvitfeldt@gmail.com\", role = \"ctb\"),\n    person(\"Os\", \"Keyes\", , \"ironholds@gmail.com\", role = \"ctb\",\n           comment = c(ORCID = \"0000-0001-5196-609X\")),\n    person(\"Kanishka\", \"Misra\", , \"kmisra@purdue.edu\", role = \"ctb\"),\n    person(\"Tim\", \"Mastny\", , \"tim.mastny@gmail.com\", role = \"ctb\"),\n    person(\"Jeff\", \"Erickson\", , \"jeff@erick.so\", role = \"ctb\"),\n    person(\"David\", \"Robinson\", , \"admiral.david@gmail.com\", role = \"aut\"),\n    person(\"Julia\", \"Silge\", , \"julia.silge@gmail.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-3671-836X\"))\n  )",
+        "Description": "Using tidy data principles can make many text mining tasks\n    easier, more effective, and consistent with tools already in wide use.\n    Much of the infrastructure needed for text mining with tidy data\n    frames already exists in packages like 'dplyr', 'broom', 'tidyr', and\n    'ggplot2'. In this package, we provide functions and supporting data\n    sets to allow conversion of text to and from tidy formats, and to\n    switch seamlessly between tidy tools and existing text mining\n    packages.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://github.com/juliasilge/tidytext",
+        "BugReports": "https://github.com/juliasilge/tidytext/issues",
+        "Depends": "R (>= 2.10)",
+        "Imports": "dplyr, generics, hunspell, janeaustenr, lifecycle, Matrix,\nmethods, purrr (>= 0.1.1), rlang (>= 0.4.10), stringr, tibble,\ntokenizers, vctrs",
+        "Suggests": "broom, covr, data.table, ggplot2, knitr, mallet, NLP,\nquanteda, readr, reshape2, rmarkdown, scales, stm, stopwords,\ntestthat (>= 2.1.0), textdata, tidyr, tm, topicmodels, vdiffr,\nwordcloud",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/website": "ropensci/gutenbergr",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "LazyData": "TRUE",
+        "RoxygenNote": "7.1.2.9000",
+        "NeedsCompilation": "no",
+        "Packaged": "2022-08-19 18:47:39 UTC; juliasilge",
+        "Author": "Gabriela De Queiroz [ctb],\n  Colin Fay [ctb] (<https://orcid.org/0000-0001-7343-1846>),\n  Emil Hvitfeldt [ctb],\n  Os Keyes [ctb] (<https://orcid.org/0000-0001-5196-609X>),\n  Kanishka Misra [ctb],\n  Tim Mastny [ctb],\n  Jeff Erickson [ctb],\n  David Robinson [aut],\n  Julia Silge [aut, cre] (<https://orcid.org/0000-0002-3671-836X>)",
+        "Maintainer": "Julia Silge <julia.silge@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2022-08-20 00:10:02 UTC",
+        "Built": "R 4.2.2; ; 2023-02-23 06:41:04 UTC; unix"
+      }
+    },
     "tinytex": {
       "Source": "CRAN",
       "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
@@ -2559,6 +2755,41 @@
         "Repository": "CRAN",
         "Date/Publication": "2022-09-27 07:20:02 UTC",
         "Built": "R 4.2.1; ; 2022-10-04 08:49:51 UTC; unix"
+      }
+    },
+    "tokenizers": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Package": "tokenizers",
+        "Type": "Package",
+        "Title": "Fast, Consistent Tokenization of Natural Language Text",
+        "Version": "0.2.3",
+        "Date": "2022-09-23",
+        "Description": "Convert natural language text into tokens. Includes tokenizers for\n    shingled n-grams, skip n-grams, words, word stems, sentences, paragraphs,\n    characters, shingled characters, lines, tweets, Penn Treebank, regular\n    expressions, as well as functions for counting characters, words, and sentences,\n    and a function for splitting longer texts into separate documents, each with\n    the same number of words.  The tokenizers have a consistent interface, and\n    the package is built on the 'stringi' and 'Rcpp' packages for  fast\n    yet correct tokenization in 'UTF-8'. ",
+        "License": "MIT + file LICENSE",
+        "LazyData": "yes",
+        "Authors@R": "c(person(\"Lincoln\", \"Mullen\", role = c(\"aut\", \"cre\"),\n        email = \"lincoln@lincolnmullen.com\",\n        comment = c(ORCID = \"0000-0001-5103-6917\")),\n        person(\"Os\", \"Keyes\", role = c(\"ctb\"),\n        email = \"ironholds@gmail.com\",\n        comment = c(ORCID = \"0000-0001-5196-609X\")),\n        person(\"Dmitriy\", \"Selivanov\", role = c(\"ctb\"),\n        email = \"selivanov.dmitriy@gmail.com\"),\n        person(\"Jeffrey\", \"Arnold\", role = c(\"ctb\"),\n        email = \"jeffrey.arnold@gmail.com\",\n        comment = c(ORCID = \"0000-0001-9953-3904\")),\n        person(\"Kenneth\", \"Benoit\", role = c(\"ctb\"),\n        email = \"kbenoit@lse.ac.uk\",\n        comment = c(ORCID = \"0000-0002-0797-564X\")))",
+        "URL": "https://docs.ropensci.org/tokenizers/,\nhttps://github.com/ropensci/tokenizers",
+        "BugReports": "https://github.com/ropensci/tokenizers/issues",
+        "RoxygenNote": "7.2.1",
+        "Depends": "R (>= 3.1.3)",
+        "Imports": "stringi (>= 1.0.1), Rcpp (>= 0.12.3), SnowballC (>= 0.5.1)",
+        "LinkingTo": "Rcpp",
+        "Encoding": "UTF-8",
+        "Suggests": "covr, knitr, rmarkdown, stopwords (>= 0.9.0), testthat",
+        "VignetteBuilder": "knitr",
+        "NeedsCompilation": "yes",
+        "Packaged": "2022-09-23 18:08:26 UTC; lmullen",
+        "Author": "Lincoln Mullen [aut, cre] (<https://orcid.org/0000-0001-5103-6917>),\n  Os Keyes [ctb] (<https://orcid.org/0000-0001-5196-609X>),\n  Dmitriy Selivanov [ctb],\n  Jeffrey Arnold [ctb] (<https://orcid.org/0000-0001-9953-3904>),\n  Kenneth Benoit [ctb] (<https://orcid.org/0000-0002-0797-564X>)",
+        "Maintainer": "Lincoln Mullen <lincoln@lincolnmullen.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2022-09-23 20:00:02 UTC",
+        "Built": "R 4.2.2; x86_64-pc-linux-gnu; 2023-02-23 06:40:56 UTC; unix"
       }
     },
     "utf8": {
@@ -2818,19 +3049,22 @@
   },
   "files": {
     ".Rprofile": {
-      "checksum": "c9792fee88498de334d976dfef11bdb5"
+      "checksum": "8729fd75514270d1b1324bf5af989255"
     },
     "config.yml": {
       "checksum": "d4c48620e7d671c47a0704091a4f2071"
     },
     "DESCRIPTION": {
-      "checksum": "767c26ac01f1966d94e1efdfcb86a405"
+      "checksum": "25de028307e4e789070535ceb4f0341b"
     },
     "generate_all_narratives.R": {
-      "checksum": "c653e171ed562b8b235c001b1b9a18ae"
+      "checksum": "6bf97d950bd6c3c57098c223fb50fff9"
     },
     "LICENSE": {
       "checksum": "b32a2275ea414d1736c75ac36714fc34"
+    },
+    "NEWS.md": {
+      "checksum": "63ffddf7d173b89d05a1ce7d18235ec5"
     },
     "partner_narratives_template.Rmd": {
       "checksum": "159f41a777a04732f5f7c6dad7ef2a81"
@@ -2839,7 +3073,7 @@
       "checksum": "cd04d9e778b00519de3e0e2afc97eb28"
     },
     "server.R": {
-      "checksum": "7340b5710a245dcb5f70c8eba962373b"
+      "checksum": "123524f1d9c16ea1b86ad09f3f4d1edb"
     },
     "texput.log": {
       "checksum": "30530709ef943d174172ecfdcfb5c63c"
@@ -2848,7 +3082,7 @@
       "checksum": "112ea97d13f284c982d07294b31e4cdd"
     },
     "utils.R": {
-      "checksum": "51f4eacde5f69dffd5dc1004244fb6c3"
+      "checksum": "28579d8e5ce1b2657d3e262c01946a9d"
     },
     "www/pepfar.png": {
       "checksum": "cd04d9e778b00519de3e0e2afc97eb28"

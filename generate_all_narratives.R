@@ -3,22 +3,23 @@ require(magrittr)
 require(futile.logger)
 require(plyr)
 require(dplyr)
+require(datimutils)
 
 
 source("./utils.R")
 
-fiscal_year<-2020
-fiscal_quarter<-3
+fiscal_year<-2023
+fiscal_quarter<-1
 
 input<-list(fiscal_year=fiscal_year,fiscal_quarter=fiscal_quarter)
 
-loadSecrets("/home/jason/.secrets/datim.json")
+loginToDATIM("/home/jason/.secrets/datim.json")
 
 #Initial setup
-ous<-getOperatingUnits()
-mechs<-getUserMechanisms() 
-des_partner<-getNarrativeDataElements(fiscal_year)
-des_usg<-getUSGNarrativeDataElements()
+ous<-getOperatingUnits(d2_session = d2_default_session)
+mechs<-getUserMechanisms(d2_session = d2_default_session) 
+des_partner<-getNarrativeDataElements(fiscal_year, d2_session = d2_default_session)
+des_usg<-getUSGNarrativeDataElements(d2_session = d2_default_session)
 
 ous_unique<-ous %>%  dplyr::select(ou,ou_id) %>% dplyr::distinct()
 
@@ -29,9 +30,10 @@ for (i in 1:NROW(ous_unique)) {
   partner_url<-assemblePartnerNarrativeURL(ou = countries$country_id,
                               fiscal_year = fiscal_year,
                               fiscal_quarter = fiscal_quarter,
-                              all_des = unique(des_partner$de_uid))
+                              all_des = unique(des_partner$de_uid),
+                              d2_session = d2_default_session)
 
-  partner_data <- d2_analyticsResponse(partner_url) %>% 
+  partner_data <- d2_analyticsResponse(partner_url, d2_session = d2_default_session) %>% 
     dplyr::rename(country = `Organisation unit`) %>% 
     dplyr::mutate(mech_code = (stringr::str_split(`Funding Mechanism`," - ") %>%
                                  purrr::map(.,purrr::pluck(2)) %>%
