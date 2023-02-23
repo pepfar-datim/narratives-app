@@ -45,6 +45,16 @@
       "Hash": "4bf2c61e656bbc238634c798c208d386",
       "Requirements": []
     },
+    "Matrix": {
+      "Package": "Matrix",
+      "Version": "1.5-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "539dc0c0c05636812f1080f473d2c177",
+      "Requirements": [
+        "lattice"
+      ]
+    },
     "R6": {
       "Package": "R6",
       "Version": "2.5.1",
@@ -59,6 +69,14 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "e9c08b94391e9f3f97355841229124f2",
+      "Requirements": []
+    },
+    "SnowballC": {
+      "Package": "SnowballC",
+      "Version": "0.7.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bc26e07c0d747fd287c370fe355e7b85",
       "Requirements": []
     },
     "ade4": {
@@ -425,6 +443,25 @@
         "openssl"
       ]
     },
+    "hunspell": {
+      "Package": "hunspell",
+      "Version": "3.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "656219b6f3f605499d7cdbe208656639",
+      "Requirements": [
+        "Rcpp",
+        "digest"
+      ]
+    },
+    "janeaustenr": {
+      "Package": "janeaustenr",
+      "Version": "1.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "26f391e42073877818f2d4f0470dca24",
+      "Requirements": []
+    },
     "jquerylib": {
       "Package": "jquerylib",
       "Version": "0.1.4",
@@ -703,6 +740,16 @@
         "yaml"
       ]
     },
+    "rpivotTable": {
+      "Package": "rpivotTable",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a7ce09cc0ac98041b252d7af4a3cc131",
+      "Requirements": [
+        "htmlwidgets"
+      ]
+    },
     "sass": {
       "Package": "sass",
       "Version": "0.4.4",
@@ -770,10 +817,10 @@
     },
     "shinyWidgets": {
       "Package": "shinyWidgets",
-      "Version": "0.7.3",
+      "Version": "0.7.5",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "93797f9ae8185c55a2f775f331591a55",
+      "Hash": "2fb744ccca8ab2b6caf99e15dc5f0146",
       "Requirements": [
         "anytime",
         "bslib",
@@ -900,6 +947,27 @@
         "vctrs"
       ]
     },
+    "tidytext": {
+      "Package": "tidytext",
+      "Version": "0.3.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "baf783b244a36fe5d11069b53f32a136",
+      "Requirements": [
+        "Matrix",
+        "dplyr",
+        "generics",
+        "hunspell",
+        "janeaustenr",
+        "lifecycle",
+        "purrr",
+        "rlang",
+        "stringr",
+        "tibble",
+        "tokenizers",
+        "vctrs"
+      ]
+    },
     "tinytex": {
       "Package": "tinytex",
       "Version": "0.42",
@@ -908,6 +976,18 @@
       "Hash": "7629c6c1540835d5248e6e7df265fa74",
       "Requirements": [
         "xfun"
+      ]
+    },
+    "tokenizers": {
+      "Package": "tokenizers",
+      "Version": "0.2.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a365153df5ef1a2955cc1d3a9020914a",
+      "Requirements": [
+        "Rcpp",
+        "SnowballC",
+        "stringi"
       ]
     },
     "utf8": {
