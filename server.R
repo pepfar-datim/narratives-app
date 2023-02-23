@@ -292,13 +292,17 @@ shinyServer(function(input, output, session) {
             id = "main-panel",
             type = "tabs",
             tabPanel("Narratives", dataTableOutput('narratives')),
-            tabPanel("USG Narratives",dataTableOutput('usg_narratives'))
+            tabPanel("USG Narratives",dataTableOutput('usg_narratives')),
+            tabPanel("Partner Sentiment"),
+            fluidRow(column(width = 12, div(rpivotTable::rpivotTableOutput({"sentiment_pivot"}))))
             
           ))
         ))
   }
 })
   
+  
+
   waiting_screen <- tagList(
     waiter::spin_solar(),
     h4("Getting things set up. Please wait...")
@@ -310,6 +314,19 @@ shinyServer(function(input, output, session) {
   ) 
 
   
+  output$partner_sentiment <- rpivotTable::renderRpivotTable({
+    vr<-filtered_narratives()
+    
+    if (!inherits(vr, "error") & !is.null(vr)) {
+      if (is.null(vr$partner_data)) {
+        return(NULL)
+      }
+      generateSentimentPivot(vr)
+    } else {
+      NULL
+    }
+  })
+    
   # password entry UI componenets:
   #   username and password text fields, login button
   output$uiLogin <- renderUI({
@@ -568,6 +585,8 @@ shinyServer(function(input, output, session) {
                                          unlist() ) ) %>% 
           dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
           dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+        
+        d  <- generateSentimentPivot(d)
       }
 
       

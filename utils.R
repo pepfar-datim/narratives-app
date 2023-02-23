@@ -334,6 +334,30 @@ d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
     }
 }
 
+generateSentimentPivot <- function(d) {
+  
+  tidy_partner_data <- d$partner %>% 
+    dplyr::select(tech_area = Data, mech_code, partner_name, agency_name, text = Value) %>% 
+    unnest_tokens(word, text) %>% 
+    anti_join(get_stopwords())
+  
+  
+  pivot_data<- tidy_partner_data %>%
+    inner_join(bing) %>%
+    dplyr::group_by(tech_area, mech_code, partner_name, agency_name, sentiment) %>% 
+    dplyr::tally() %>% 
+    dplyr::ungroup() %>% 
+    tidyr::spread(sentiment,n, fill = 0) %>% 
+    dplyr::mutate( total = positive + negative,
+                   positivity = positive / (positive + negative) * 100) %>% 
+    dplyr::mutate(sentiment = dplyr::case_when( positivity >= 50 ~ "Mostly positive",
+                                                positivity < 50 ~ "Mostly negative" )) 
+  
+  rpivotTable(data = pivot, rows = c("tech_area"), 
+                   vals = "positivity", aggregatorName = "Average", rendererName = "Table")
+  
+}
+
 
 getVersionInfo <- function() {
   
