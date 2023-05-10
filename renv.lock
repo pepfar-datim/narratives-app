@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.2.2",
+    "Version": "4.3.0",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -36,6 +36,14 @@
         "magrittr",
         "promises"
       ]
+    },
+    "ISOcodes": {
+      "Package": "ISOcodes",
+      "Version": "2022.09.29",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c4bc79931eab19f1553b31b744aa5ac1",
+      "Requirements": []
     },
     "MASS": {
       "Package": "MASS",
@@ -223,12 +231,12 @@
       "Version": "0.6.0",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteHost": "api.github.com",
       "RemoteUsername": "pepfar-datim",
       "RemoteRepo": "datimutils",
       "RemoteRef": "master",
-      "RemoteSha": "3346faec3d1c0a6d180a1b60cab4176c2b27fa95",
-      "Hash": "b38f9407699a3f75b74a0b3349d8684a",
+      "RemoteSha": "a662c088cbe46aa32679b08ce768241a231442f6",
+      "RemoteHost": "api.github.com",
+      "Hash": "47e191d5446f393d56bc39e3217f867f",
       "Requirements": [
         "R6",
         "httr",
@@ -867,6 +875,16 @@
       "Hash": "2a118bdd2db0a301711e0a9e3e3206d5",
       "Requirements": [
         "lattice"
+      ]
+    },
+    "stopwords": {
+      "Package": "stopwords",
+      "Version": "2.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "82036936cbed392a250d2e6ee6ef2e53",
+      "Requirements": [
+        "ISOcodes"
       ]
     },
     "stringi": {
