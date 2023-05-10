@@ -334,6 +334,30 @@ d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
     }
 }
 
+generateSentimentPivot <- function(d) {
+  
+  tidy_partner_data <- d$partner %>% 
+    dplyr::select(country, technical_area, support_type, mech_code, partner_name, agency_name, text = Value) %>% 
+    tidytext::unnest_tokens(word, text) %>% 
+    dplyr::anti_join(tidytext::get_stopwords())
+  
+  
+  pivot_data<- tidy_partner_data %>%
+    dplyr::inner_join(tidytext::get_sentiments("bing")) %>%
+    dplyr::group_by(country, technical_area, support_type, mech_code, partner_name, agency_name, sentiment) %>% 
+    dplyr::tally() %>% 
+    dplyr::ungroup() %>% 
+    tidyr::spread(sentiment,n, fill = 0) %>% 
+    dplyr::mutate( total = positive + negative,
+                   sentiment_index = positive / (positive + negative) * 100) %>% 
+    dplyr::mutate(sentiment = dplyr::case_when( sentiment_index >= 50 ~ "Mostly positive",
+                                                sentiment_index < 50 ~ "Mostly negative" )) 
+  
+  rpivotTable::rpivotTable(data = pivot_data, rows = c("technical_area"), 
+                   vals = "sentiment_index", aggregatorName = "Average", rendererName = "Table")
+  
+}
+
 
 getVersionInfo <- function() {
   

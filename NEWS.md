@@ -1,3 +1,7 @@
+
+#Version 0.0.4
+* Add basic sentiment analysis. 
+
 # Version 0.0.3
 * Fixed issue with loading dialog not displaying.
 
