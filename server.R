@@ -5,6 +5,7 @@ require(magrittr)
 require(DT)
 require(shinyWidgets)
 require(waiter)
+library(stopwords)
 
 ################ OAuth Client information #####################################
 

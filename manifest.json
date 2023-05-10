@@ -67,6 +67,32 @@
         "Built": "R 4.3.0; ; 2023-05-10 09:45:38 UTC; unix"
       }
     },
+    "ISOcodes": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Package": "ISOcodes",
+        "Version": "2022.09.29",
+        "Encoding": "UTF-8",
+        "Title": "Selected ISO Codes",
+        "Authors@R": "c(person(\"Christian\", \"Buchta\", role = \"aut\"),\n             person(\"Kurt\", \"Hornik\", role = c(\"aut\", \"cre\"),\n                    email = \"Kurt.Hornik@R-project.org\",\n\t\t    comment = c(ORCID = \"0000-0003-4198-9911\")))",
+        "Description": "ISO language, territory, currency, script and character codes.\n  Provides ISO 639 language codes, ISO 3166 territory codes, ISO 4217\n  currency codes, ISO 15924 script codes, and the ISO 8859 character codes\n  as well as the UN M.49 area codes.",
+        "Depends": "R (>= 3.5.0)",
+        "License": "GPL-2",
+        "LazyData": "yes",
+        "NeedsCompilation": "no",
+        "Packaged": "2022-09-29 11:56:03 UTC; hornik",
+        "Author": "Christian Buchta [aut],\n  Kurt Hornik [aut, cre] (<https://orcid.org/0000-0003-4198-9911>)",
+        "Maintainer": "Kurt Hornik <Kurt.Hornik@R-project.org>",
+        "Repository": "CRAN",
+        "Date/Publication": "2022-09-30 04:44:59 UTC",
+        "Built": "R 4.3.0; ; 2023-05-10 09:53:56 UTC; unix"
+      }
+    },
     "MASS": {
       "Source": "CRAN",
       "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
@@ -2491,6 +2517,39 @@
         "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-05-10 09:46:45 UTC; unix"
       }
     },
+    "stopwords": {
+      "Source": "CRAN",
+      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "GithubRepo": null,
+      "GithubUsername": null,
+      "GithubRef": null,
+      "GithubSha1": null,
+      "description": {
+        "Package": "stopwords",
+        "Type": "Package",
+        "Title": "Multilingual Stopword Lists",
+        "Version": "2.3",
+        "Authors@R": "c(person(\"Kenneth\", \"Benoit\", email = \"kbenoit@lse.ac.uk\", role = c(\"aut\", \"cre\")),\n    person(\"David\", \"Muhr\", email = \"muhrdavid+github@gmail.com\", role = \"aut\"), \n    person(\"Kohei\", \"Watanabe\", email = \"watanabe.kohei@gmail.com\", role = \"aut\"))",
+        "Description": "Provides multiple sources of stopwords, for use in text analysis and natural language processing.",
+        "License": "MIT + file LICENSE",
+        "Depends": "R (>= 2.10)",
+        "Imports": "ISOcodes",
+        "Suggests": "covr, quanteda, spelling, testthat",
+        "URL": "https://github.com/quanteda/stopwords",
+        "BugReports": "https://github.com/quanteda/stopwords/issues",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "Language": "en-GB",
+        "RoxygenNote": "7.1.1",
+        "NeedsCompilation": "no",
+        "Packaged": "2021-10-28 10:59:10 UTC; kbenoit",
+        "Author": "Kenneth Benoit [aut, cre],\n  David Muhr [aut],\n  Kohei Watanabe [aut]",
+        "Maintainer": "Kenneth Benoit <kbenoit@lse.ac.uk>",
+        "Repository": "CRAN",
+        "Date/Publication": "2021-10-28 11:20:02 UTC",
+        "Built": "R 4.3.0; ; 2023-05-10 09:53:57 UTC; unix"
+      }
+    },
     "stringi": {
       "Source": "CRAN",
       "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
@@ -3051,7 +3110,7 @@
       "checksum": "98a7896034da4e9923e76e223ddec75c"
     },
     ".Rprofile": {
-      "checksum": "a905915b50f7f92a71f1028ace158179"
+      "checksum": "b158e21e1c7e147645da10cdd78fb9f8"
     },
     "config.yml": {
       "checksum": "d4c48620e7d671c47a0704091a4f2071"
@@ -3075,7 +3134,7 @@
       "checksum": "cd04d9e778b00519de3e0e2afc97eb28"
     },
     "server.R": {
-      "checksum": "123524f1d9c16ea1b86ad09f3f4d1edb"
+      "checksum": "b032eb1ed466f39533f21782fb01c315"
     },
     "texput.log": {
       "checksum": "30530709ef943d174172ecfdcfb5c63c"
