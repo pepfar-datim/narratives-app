@@ -145,6 +145,7 @@ getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
                   technical_area = dplyr::case_when(is.na(technical_area) ~ tech_area_regex,
                                                           TRUE ~ technical_area)) %>% 
     dplyr::select(-tech_area_regex)
+
   
   getListElement<-function(x,n) tryCatch(str_trim(str_split(x,","))[[n]],  error = function(e) return(NA))
   #Tech area
