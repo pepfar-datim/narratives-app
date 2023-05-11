@@ -1,4 +1,21 @@
 
+
+.getResponse <- function(url, timeout = 60, d2_session) {
+  
+  url <- URLencode(url)
+  
+  if (is.null(d2_session$token)) {
+    httr::GET(url, httr::timeout(timeout),
+              handle = d2_session$handle)
+  } else {
+    httr::GET(url,
+              httr::timeout(timeout),
+              handle = d2_session$handle,
+              httr::add_headers(Authorization =
+                                  paste("Bearer",
+                                        d2_session$token$credentials$access_token, sep = " ")))
+  }
+}
 #' Title getBaseURL()
 #'
 #' @return A base URL to be used throughout the application. If the BASE_URL
@@ -30,11 +47,7 @@ futile.logger::flog.appender(futile.logger::appender.console(), name="narratives
 isUSGUser<-function(d2_session) {
   
     paste0(d2_session$base_url, "api/me?fields=userGroups[id,name]") %>% 
-    utils::URLencode(.) %>% 
-    httr::GET(.,handle=d2_session$handle,
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON() %>% 
     purrr::pluck("userGroups") %>% 
@@ -47,11 +60,7 @@ getOperatingUnits<-function(d2_session) {
   
   
   ou_map<-paste0(d2_session$base_url,"api/dataStore/dataSetAssignments/orgUnitLevels") %>% 
-    URLencode(.) %>% 
-    httr::GET(., handle=d2_session$handle,
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     dplyr::bind_rows() %>% 
@@ -63,11 +72,7 @@ getOperatingUnits<-function(d2_session) {
   
   #TODO: Investigate why the API is not filtering based on the users orgunit, which really should be the case.
   ous<-paste0(d2_session$base_url,"api/organisationUnits?filter=level:lt:5&fields=id,name&filter=path:like:",d2_session$user_orgunit,"&paging=false") %>% 
-    URLencode(.) %>% 
-    httr::GET(., handle=d2_session$handle,
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("organisationUnits")
@@ -94,11 +99,7 @@ getPeriods<-function() {
 getUSGNarrativeDataElements<-function(d2_session) {
   
   paste0(d2_session$base_url,"api/dataSets/wkdCW3M4zYT?fields=id,dataSetElements,organisationUnits") %>% 
-    URLencode(.) %>% 
-    httr::GET(., handle=d2_session$handle,
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("dataSetElements") %>% 
@@ -110,10 +111,7 @@ getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
   
   
   des<- paste0(d2_session$base_url,"api/dataElementGroups?filter=name:like:Narratives&paging=false&fields=id,name,dataElements[id,shortName]") %>% 
-    httr::GET(.,handle=d2_session$handle,
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content("text") %>% 
     jsonlite::fromJSON() %>% 
     purrr::pluck("dataElementGroups") %>%
@@ -130,20 +128,24 @@ getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
   tech_area <-
     paste0(
       d2_session$base_url,
-      "api/dataElementGroupSets/LxhLO68FcXm?fields=dataElementGroups[id,name,dataElements[id]"
+      "api/dataElementGroupSets/LxhLO68FcXm?fields=dataElementGroups[id,name,dataElements[id]&paging=false"
     ) %>%
-    httr::GET(., handle = d2_session$handle,       httr::add_headers(
-      Authorization =
-        paste("Bearer",
-              d2_session$token$credentials$access_token, sep = " ")
-    )) %>% httr::content("text") %>% jsonlite::fromJSON() %>%
+    .getResponse(., d2_session = d2_session) %>% 
+    httr::content("text") %>% 
+    jsonlite::fromJSON() %>%
     purrr::pluck("dataElementGroups") %>%
     tidyr::unnest_longer(., "dataElements", simplify = TRUE) %>%
     dplyr::mutate(de_uid = dataElements$id) %>%
     dplyr::select(-id, -dataElements) %>%
-    dplyr::rename("technical_area" = name)
+    dplyr::rename("technical_area" = name) 
+
   
-  des <- des %>% dplyr::inner_join(tech_area, by = "de_uid") 
+  des <- des %>% dplyr::left_join(tech_area, by = "de_uid") %>% 
+    dplyr::mutate(tech_area_regex = stringr::str_extract(de_name,'^([A-Za-z0-9_\\.]+)'),
+                  technical_area = dplyr::case_when(is.na(technical_area) ~ tech_area_regex,
+                                                          TRUE ~ technical_area)) %>% 
+    dplyr::select(-tech_area_regex)
+
   
   getListElement<-function(x,n) tryCatch(str_trim(str_split(x,","))[[n]],  error = function(e) return(NA))
   #Tech area
@@ -271,10 +273,7 @@ getUserMechanisms<-function(d2_session) {
   
 
   cogs<-paste0(d2_session$base_url,"api/",api_version(),"/dimensions/SH885jaRe0o/items.json?fields=id,shortName&paging=false") %>% 
-    httr::GET(., handle = d2_session$handle,
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("items")
@@ -284,11 +283,7 @@ getUserMechanisms<-function(d2_session) {
   
   #Agency map
   agencies_cos<-paste0(d2_session$base_url,"api/categoryOptionGroupSets/bw8KHXzxd9i?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
-   URLencode(.) %>% 
-    httr::GET(., handle = d2_session$handle,
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("categoryOptionGroups") %>% 
@@ -301,11 +296,7 @@ getUserMechanisms<-function(d2_session) {
   
   #Partner map
   partners_cos<-paste0(d2_session$base_url,"api/categoryOptionGroupSets/BOyWrF33hiR?fields=categoryOptionGroups[id,name,categoryOptions[id]]&paging=false") %>% 
-    URLencode(.) %>% 
-    httr::GET(., handle = d2_session$handle, 
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     purrr::pluck("categoryOptionGroups") %>% 
@@ -345,10 +336,7 @@ d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
 
   #print(url)
   d<-url %>% 
-    httr::GET(., handle = d2_session$handle,
-              httr::add_headers(Authorization =
-                                  paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " "))) %>% 
+    .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.)
   
