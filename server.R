@@ -292,8 +292,8 @@ shinyServer(function(input, output, session) {
           mainPanel(tabsetPanel(
             id = "main-panel",
             type = "tabs",
-            tabPanel("Narratives", dataTableOutput('narratives')),
-            tabPanel("USG Narratives",dataTableOutput('usg_narratives')),
+            tabPanel("Narratives", DT::dataTableOutput('narratives')),
+            tabPanel("USG Narratives", DT::dataTableOutput('usg_narratives')),
             tabPanel("Partner Sentiment",
             fluidRow(column(width=8,div(HTML(paste0("<p>The sentiment analysis is based on the ",
             "<a href='https://emilhvitfeldt.github.io/textdata/reference/lexicon_bing.html'>Bing</a> dataset.",
