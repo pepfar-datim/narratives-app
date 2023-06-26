@@ -280,7 +280,7 @@ shinyServer(function(input, output, session) {
                                label = "Search:",
                                placeholder = "Free text search:"),
             tags$hr(),
-            conditionalPanel(checkboxInput("includeUSGNarratives",label = "Include USG Narratives"),condition = user_input$is_usg_user),
+            conditionalPanel(checkboxInput("includeUSGNarratives",label = "Include USG Narratives"),condition = "user_input$is_usg_user=true"),
             tags$hr(),
             div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("fetch","Get Narratives")),
             div(style = "display: inline-block; vertical-align:top; width: 80 px;",actionButton("reset_input","Reset")),
