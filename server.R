@@ -5,7 +5,9 @@ require(magrittr)
 require(DT)
 require(shinyWidgets)
 require(waiter)
-library(stopwords)
+require(stopwords)
+require(rpivotTable)
+
 
 ################ OAuth Client information #####################################
 
