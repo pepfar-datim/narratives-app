@@ -12,7 +12,7 @@
   "packages": {
     "BH": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -38,7 +38,7 @@
     },
     "DT": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -95,7 +95,7 @@
     },
     "MASS": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -128,7 +128,7 @@
     },
     "Matrix": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -188,12 +188,12 @@
         "Maintainer": "Winston Chang <winston@stdout.org>",
         "Repository": "CRAN",
         "Date/Publication": "2021-08-19 14:00:05 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:14:25 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 08:56:57 UTC; unix"
       }
     },
     "Rcpp": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -222,7 +222,7 @@
     },
     "SnowballC": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -250,7 +250,7 @@
     },
     "ade4": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -337,7 +337,7 @@
         "Maintainer": "Jeroen Ooms <jeroen@berkeley.edu>",
         "Repository": "CRAN",
         "Date/Publication": "2019-01-13 12:50:03 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:14:44 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 08:56:07 UTC; unix"
       }
     },
     "assertthat": {
@@ -364,7 +364,7 @@
         "Maintainer": "Hadley Wickham <hadley@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2019-03-21 14:53:46 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:14:45 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 08:56:08 UTC; unix"
       }
     },
     "base64enc": {
@@ -389,12 +389,12 @@
         "Packaged": "2015-02-04 20:31:00 UTC; svnuser",
         "Repository": "CRAN",
         "Date/Publication": "2015-07-28 08:03:37",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:14:47 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 08:56:09 UTC; unix"
       }
     },
     "bslib": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -429,7 +429,7 @@
     },
     "cachem": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -458,7 +458,7 @@
     },
     "cli": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -490,7 +490,7 @@
     },
     "commonmark": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -609,7 +609,7 @@
         "Maintainer": "Gábor Csárdi <csardi.gabor@gmail.com>",
         "Repository": "CRAN",
         "Date/Publication": "2022-09-29 16:20:24 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:17:19 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 09:00:12 UTC; unix"
       }
     },
     "crosstalk": {
@@ -639,12 +639,12 @@
         "Maintainer": "Carson Sievert <carson@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2021-11-04 16:30:02 UTC",
-        "Built": "R 4.3.0; ; 2023-05-09 15:54:20 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 09:00:18 UTC; unix"
       }
     },
     "curl": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -702,7 +702,7 @@
         "VignetteBuilder": "knitr",
         "Author": "Scott Jackson [aut, cre],\n  Jason Pickering [aut],\n  Sam Garman [aut],\n  Jordan Bales [aut],\n  Fausto Lopez [aut],\n  Chris Nemarich [ctb]",
         "Maintainer": "Scott Jackson <sjackson@baosystems.com>",
-        "Built": "R 4.3.0; ; 2023-04-26 16:18:43 UTC; unix",
+        "Built": "R 4.3.0; ; 2023-06-02 09:01:49 UTC; unix",
         "RemoteType": "github",
         "RemoteUsername": "pepfar-datim",
         "RemoteRepo": "datimutils",
@@ -718,7 +718,7 @@
     },
     "digest": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -747,7 +747,7 @@
     },
     "dplyr": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -807,12 +807,12 @@
         "Maintainer": "Hadley Wickham <hadley@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2021-04-29 12:40:02 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:15:17 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 08:57:10 UTC; unix"
       }
     },
     "evaluate": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -843,7 +843,7 @@
     },
     "fansi": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -875,7 +875,7 @@
     },
     "fastmap": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -927,12 +927,12 @@
         "Packaged": "2018-10-05 10:03:40 UTC; gaborcsardi",
         "Repository": "CRAN",
         "Date/Publication": "2018-10-05 10:30:12 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:18:39 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 09:01:46 UTC; unix"
       }
     },
     "fontawesome": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -965,7 +965,7 @@
     },
     "formatR": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -996,7 +996,7 @@
     },
     "fs": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1115,7 +1115,7 @@
         "Maintainer": "Hadley Wickham <hadley@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2022-07-05 19:40:02 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:14:57 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 08:56:48 UTC; unix"
       }
     },
     "glue": {
@@ -1149,12 +1149,12 @@
         "Maintainer": "Jennifer Bryan <jenny@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2022-02-24 07:50:20 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:13:23 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 08:56:31 UTC; unix"
       }
     },
     "highr": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1185,7 +1185,7 @@
     },
     "htmltools": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1219,7 +1219,7 @@
     },
     "htmlwidgets": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1278,12 +1278,12 @@
         "Maintainer": "Neal Richardson <neal.p.richardson@gmail.com>",
         "Repository": "CRAN",
         "Date/Publication": "2021-01-10 23:10:02 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:19:14 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 09:02:22 UTC; unix"
       }
     },
     "httpuv": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1317,7 +1317,7 @@
     },
     "httr": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1437,12 +1437,12 @@
         "Maintainer": "Carson Sievert <carson@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2021-04-26 17:10:02 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:16:53 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 08:59:26 UTC; unix"
       }
     },
     "jsonlite": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1503,7 +1503,7 @@
     },
     "knitr": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1565,7 +1565,7 @@
     },
     "later": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1593,12 +1593,12 @@
         "Maintainer": "Winston Chang <winston@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2021-08-18 16:30:06 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:19:23 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 09:02:33 UTC; unix"
       }
     },
     "lattice": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1654,7 +1654,7 @@
         "Maintainer": "Hadley Wickham <hadley@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2019-03-15 17:50:07 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:25:59 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 09:00:02 UTC; unix"
       }
     },
     "lifecycle": {
@@ -1687,12 +1687,12 @@
         "Maintainer": "Lionel Henry <lionel@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2022-10-07 09:50:02 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:13:31 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 08:56:32 UTC; unix"
       }
     },
     "lubridate": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1757,7 +1757,7 @@
         "Maintainer": "Lionel Henry <lionel@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2022-03-30 07:30:09 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:13:32 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 08:56:49 UTC; unix"
       }
     },
     "memoise": {
@@ -1786,7 +1786,7 @@
         "Maintainer": "Winston Chang <winston@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2021-11-26 16:11:10 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:16:55 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 08:59:28 UTC; unix"
       }
     },
     "mime": {
@@ -1815,12 +1815,12 @@
         "Maintainer": "Yihui Xie <xie@yihui.name>",
         "Repository": "CRAN",
         "Date/Publication": "2021-09-28 05:00:05 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:16:56 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 08:59:29 UTC; unix"
       }
     },
     "nlme": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1854,7 +1854,7 @@
     },
     "openssl": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1886,7 +1886,7 @@
     },
     "openxlsx": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -1922,7 +1922,7 @@
     },
     "pillar": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2006,7 +2006,7 @@
         "Packaged": "2019-09-22 08:42:40 UTC; gaborcsardi",
         "Repository": "CRAN",
         "Date/Publication": "2019-09-22 09:20:02 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:15:05 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 08:56:58 UTC; unix"
       }
     },
     "plyr": {
@@ -2072,12 +2072,12 @@
         "Maintainer": "Joe Cheng <joe@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2021-02-11 19:00:02 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:19:34 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 09:02:44 UTC; unix"
       }
     },
     "purrr": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2136,12 +2136,12 @@
         "Maintainer": "Hadley Wickham <hadley@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2021-01-31 05:40:02 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:15:53 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 08:58:25 UTC; unix"
       }
     },
     "rlang": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2177,7 +2177,7 @@
     },
     "rmarkdown": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2242,7 +2242,7 @@
     },
     "sass": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2275,7 +2275,7 @@
     },
     "segmented": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2301,7 +2301,7 @@
     },
     "seqinr": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2334,7 +2334,7 @@
     },
     "shiny": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2369,7 +2369,7 @@
     },
     "shinyWidgets": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2455,12 +2455,12 @@
         "Packaged": "2022-06-11 08:16:07 UTC; jeroen",
         "Repository": "CRAN",
         "Date/Publication": "2022-06-11 21:40:02 UTC",
-        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-04-26 16:18:35 UTC; unix"
+        "Built": "R 4.3.0; x86_64-pc-linux-gnu; 2023-06-02 09:01:45 UTC; unix"
       }
     },
     "sourcetools": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2489,7 +2489,7 @@
     },
     "sp": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2552,7 +2552,7 @@
     },
     "stringi": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2616,7 +2616,7 @@
     },
     "sys": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2647,7 +2647,7 @@
     },
     "tibble": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2684,7 +2684,7 @@
     },
     "tidyr": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2753,7 +2753,7 @@
     },
     "tidytext": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2788,7 +2788,7 @@
     },
     "tinytex": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2818,7 +2818,7 @@
     },
     "tokenizers": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2853,7 +2853,7 @@
     },
     "utf8": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2883,7 +2883,7 @@
     },
     "vctrs": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -2986,12 +2986,12 @@
         "Maintainer": "Lionel Henry <lionel@rstudio.com>",
         "Repository": "CRAN",
         "Date/Publication": "2022-03-03 21:50:02 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:15:08 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 08:57:01 UTC; unix"
       }
     },
     "xfun": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -3046,12 +3046,12 @@
         "Packaged": "2019-04-21 10:56:51 UTC; dsco036",
         "Author": "David B. Dahl [aut],\n  David Scott [aut, cre],\n  Charles Roosen [aut],\n  Arni Magnusson [aut],\n  Jonathan Swinton [aut],\n  Ajay Shah [ctb],\n  Arne Henningsen [ctb],\n  Benno Puetz [ctb],\n  Bernhard Pfaff [ctb],\n  Claudio Agostinelli [ctb],\n  Claudius Loehnert [ctb],\n  David Mitchell [ctb],\n  David Whiting [ctb],\n  Fernando da Rosa [ctb],\n  Guido Gay [ctb],\n  Guido Schulz [ctb],\n  Ian Fellows [ctb],\n  Jeff Laake [ctb],\n  John Walker [ctb],\n  Jun Yan [ctb],\n  Liviu Andronic [ctb],\n  Markus Loecher [ctb],\n  Martin Gubri [ctb],\n  Matthieu Stigler [ctb],\n  Robert Castelo [ctb],\n  Seth Falcon [ctb],\n  Stefan Edwards [ctb],\n  Sven Garbade [ctb],\n  Uwe Ligges [ctb]",
         "Date/Publication": "2019-04-21 12:20:03 UTC",
-        "Built": "R 4.3.0; ; 2023-04-26 16:20:45 UTC; unix"
+        "Built": "R 4.3.0; ; 2023-06-02 09:03:55 UTC; unix"
       }
     },
     "yaml": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -3078,7 +3078,7 @@
     },
     "zip": {
       "Source": "CRAN",
-      "Repository": "https://ftpmirror1.infania.net/mirror/CRAN",
+      "Repository": "https://rstudio-package.ap.datim.org/prod/__linux__/jammy/latest",
       "GithubRepo": null,
       "GithubUsername": null,
       "GithubRef": null,
@@ -3107,10 +3107,10 @@
   },
   "files": {
     ".RData": {
-      "checksum": "27aa5f961f00e0851b40d4990a447d66"
+      "checksum": "25d9a289764881a22e695211dc0bbdfd"
     },
     ".Rprofile": {
-      "checksum": "c6132753b32910758307a97944fe3ed1"
+      "checksum": "9392bc3bf7da25d8d0ade7df5d034680"
     },
     "config.yml": {
       "checksum": "d4c48620e7d671c47a0704091a4f2071"
@@ -3123,6 +3123,9 @@
     },
     "LICENSE": {
       "checksum": "b32a2275ea414d1736c75ac36714fc34"
+    },
+    "narrative_des.xlsx": {
+      "checksum": "a2b5be1735c6792a7ade1bde5b3b6740"
     },
     "NEWS.md": {
       "checksum": "c9fceb4aa4540670cf74105a41cfe7b6"
@@ -3143,7 +3146,7 @@
       "checksum": "112ea97d13f284c982d07294b31e4cdd"
     },
     "utils.R": {
-      "checksum": "7d0722521ad6fe486eef57c1da71db31"
+      "checksum": "83d791437416220b6498d6cfe335948e"
     },
     "www/pepfar.png": {
       "checksum": "cd04d9e778b00519de3e0e2afc97eb28"
