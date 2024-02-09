@@ -86,7 +86,6 @@ getOperatingUnits<-function(d2_session) {
   
   }
 
-
 getPeriods<-function() {
   
   qtrseq<-seq(as.Date("2017-01-01"), by="quarter", length.out = 30)
@@ -94,7 +93,6 @@ getPeriods<-function() {
   qtrseq<-rev(paste0(as.POSIXlt(qtrseq)$year+1900, quarters(qtrseq)))
   qtrseq[2:length(qtrseq)]
 }
-
 
 getUSGNarrativeDataElements<-function(d2_session) {
   
@@ -107,7 +105,7 @@ getUSGNarrativeDataElements<-function(d2_session) {
   
 }
 
-getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
+getNarrativeDataElements<-function(fiscal_year= NA, type="Results", d2_session) {
   
   
   des<- paste0(d2_session$base_url,"api/dataElementGroups?filter=name:like:Narratives&paging=false&fields=id,name,dataElements[id,shortName]") %>% 
@@ -160,36 +158,41 @@ getNarrativeDataElements<-function(fiscal_year, type="Results", d2_session) {
                    into = c("num_denom", "support_type"),
                    sep = ", ") %>% 
    dplyr::mutate(support_type = stringr::str_remove(support_type, "[ _]NARRATIVE")) %>% 
-   dplyr::select("support_type")
+   dplyr::select("support_type") %>% 
+   dplyr::mutate(support_type = dplyr::case_when(is.na(support_type) ~'N/A',
+                                                 support_type == "NARRATIVE" ~ 'N/A',
+                                                 TRUE ~ support_type))
   
-   dplyr::bind_cols(des,support_type) %>% 
-    dplyr::filter(type == type) %>% 
-    dplyr::filter(year == fiscal_year) %>% 
-    dplyr::arrange(technical_area)
+   out <- dplyr::bind_cols(des,support_type) %>% 
+    dplyr::filter(type == type)
   
-  
-  
-}
+  if (!is.na(fiscal_year)) {
+     out <- out %>% 
+       dplyr::filter(year == fiscal_year)
+   }
 
+    out %>% 
+    dplyr::arrange(technical_area)
+   
+}
 
 getCurrentFiscalYear<-function(this_date = Sys.Date()) {
 
-  if (lubridate::quarter(this_date) == 1) {
-    this_year<-lubridate::year(this_date) -1
+  if (lubridate::quarter(this_date) == 4) {
+    this_year<-lubridate::year(this_date) + 1
   } else {
     this_year<-lubridate::year(this_date) 
   }
     this_year
 }
 
-
 getCurrentFiscalQuarter<-function(this_date = Sys.Date()) {
   
-  if (lubridate::quarter(this_date) == 1) {
-    return(4) }
+  if (lubridate::quarter(this_date) == 4) {
+    return(1) }
 
-    if ( lubridate::quarter(this_date) %in% c(2,3,4) ) {
-      lubridate::quarter(this_date) - 1
+    if ( lubridate::quarter(this_date) %in% c(1,2,3) ) {
+      lubridate::quarter(this_date) + 1
     }
   
 
@@ -198,9 +201,7 @@ getCurrentFiscalQuarter<-function(this_date = Sys.Date()) {
 convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
   
   fiscal_year<-as.integer(fiscal_year)
-  #print(paste0("Fiscal year",fiscal_year))
   fiscal_quarter<-as.integer(fiscal_quarter)
-  #print(paste("Fiscal quarter",fiscal_quarter))
   if ( !( fiscal_quarter %in% c(1,2,3,4) ) ) {stop("Invalid fiscal quarter")} 
   if (fiscal_quarter == 1) {
     calendar_quarter  <-  4
@@ -226,10 +227,11 @@ assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des, d2_
   de_bit<-paste0("&dimension=dx:",paste(all_des,sep="",collapse=";"))
   ou_bit<-paste0("&dimension=ou:", paste(ou,sep="",collapse=";"))
   end_bit<-"&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
-  paste0(base_url,mechanisms_bit,de_bit,ou_bit,period_bit,end_bit)
+  
+  url <-paste0(base_url,mechanisms_bit,de_bit,ou_bit,period_bit,end_bit)
+  return(url)
   
 }
-
 
 assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter, d2_session ) {
   
@@ -331,10 +333,8 @@ getMechDropDown<-function(mechs,ou_ids = NULL) {
 
 }
 
-
 d2_analyticsResponse <- function(url,remapCols=TRUE, d2_session) {
 
-  #print(url)
   d<-url %>% 
     .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
@@ -383,7 +383,6 @@ generateSentimentPivot <- function(d) {
                    vals = "sentiment_index", aggregatorName = "Average", rendererName = "Table")
   
 }
-
 
 getVersionInfo <- function() {
   

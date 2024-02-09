@@ -254,12 +254,12 @@ shinyServer(function(input, output, session) {
             selectInput(inputId = "fiscal_year", 
                         label= "Fiscal Year",
                         c("FY24" = 2024, "FY23" = 2023, "FY22"= 2022, "FY21"= 2021,"FY20" = 2020,"FY19" = 2019,"FY18" = 2018,"FY17" = 2017,"FY16" = 2016),
-                        selected = getCurrentFiscalYear()),
+                        selected = lubridate::year(Sys.Date())),
             tags$hr(),
             selectInput(inputId = "fiscal_quarter", 
                         label= "Fiscal Quarter",
                         c(1,2,3,4),
-                        selected=getCurrentFiscalQuarter()),
+                        selected=lubridate::quarter(Sys.Date())),
             tags$hr(),
             selectizeInput(inputId = "mechs", 
                         label= "Mechanisms",
@@ -535,8 +535,6 @@ shinyServer(function(input, output, session) {
             dplyr::pull(country_id)
         }
         
-
-      
       get_des<- function()
         {
             if ( is.null(input$des )) {return(user_input$partner_data_elements$de_uid)} else {
@@ -685,8 +683,6 @@ shinyServer(function(input, output, session) {
       
     }
     
-    
-
     d 
     
   })
