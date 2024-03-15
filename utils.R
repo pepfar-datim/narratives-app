@@ -94,9 +94,44 @@ getPeriods<-function() {
   qtrseq[2:length(qtrseq)]
 }
 
-getUSGNarrativeDataElements<-function(d2_session) {
+getUSGNarrativeDataSets <- function(fiscal_year = NA, d2_session) {
+  selected_fiscal_year <- fiscal_year
   
-  paste0(d2_session$base_url,"api/dataSets/wkdCW3M4zYT?fields=id,dataSetElements,organisationUnits") %>% 
+  ds <-
+    paste0(
+      d2_session$base_url,
+      "api/dataSets?filter=name:like:Host%20Country%20Results:%20Narratives"
+    ) %>%
+    .getResponse(., d2_session = d2_session) %>%
+    httr::content(., "text") %>%
+    jsonlite::fromJSON(.) %>%
+    purrr::pluck("dataSets") %>%
+    dplyr::mutate(period = stringr::str_extract(displayName, "FY.+$")) %>%
+    tidyr::separate(period,
+                    into = c("fiscal_year", "fiscal_quarter"),
+                    sep = "Q") %>%
+    dplyr::mutate(fiscal_year = stringr::str_replace(pattern = "FY", replacement = "", fiscal_year))
+  #If the fiscal year is not specified or really is NA, then use that dataset.
+  ds_default <-
+    ds %>% dplyr::filter(displayName == "Host Country Results: Narratives (USG)") %>%
+    dplyr::pull(id)
+  
+  if (is.na(selected_fiscal_year)) {
+    return(ds_default)
+  }
+  
+  ds_selected <- ds %>% dplyr::filter(fiscal_year == selected_fiscal_year) %>% 
+    dplyr::pull(id) 
+  if (length(ds_selected) == 0 || is.na(ds_selected)) {
+    return(ds_default)
+  } else {
+    return(ds_selected[1])
+  }
+  
+}
+getUSGNarrativeDataElements<-function(fiscal_year, d2_session) {
+  usg_dataset <- getUSGNarrativeDataSets(fiscal_year,d2_session)
+  paste0(d2_session$base_url,"api/dataSets/",usg_dataset,"?fields=id,dataSetElements,organisationUnits") %>% 
     .getResponse(., d2_session = d2_session) %>% 
     httr::content(.,"text") %>% 
     jsonlite::fromJSON(.) %>% 
@@ -105,7 +140,7 @@ getUSGNarrativeDataElements<-function(d2_session) {
   
 }
 
-getNarrativeDataElements<-function(fiscal_year= NA, type="Results", d2_session) {
+getNarrativeDataElements<-function( type="Results", d2_session) {
   
   
   des<- paste0(d2_session$base_url,"api/dataElementGroups?filter=name:like:Narratives&paging=false&fields=id,name,dataElements[id,shortName]") %>% 
@@ -117,32 +152,39 @@ getNarrativeDataElements<-function(fiscal_year= NA, type="Results", d2_session) 
     dplyr::mutate(de_name = dataElements$shortName, de_uid = dataElements$id) %>% 
     dplyr::select(-id,-dataElements) %>% 
     dplyr::mutate(year =   ( stringr::str_split(name," ") ) %>% purrr::map(purrr::pluck(1)) %>% unlist() ) %>% 
-    dplyr::filter(stringr::str_detect(name,"^20")) %>% 
-    dplyr::mutate(type = ifelse(stringr::str_detect(name,"Result"),"Results","Targets"))
+    dplyr::filter(stringr::str_detect(name,"Result")) %>% 
+    dplyr::mutate(type ="Results")
+  
+     current_fiscal_year <- getCurrentFiscalYear()
+   des <- des %>% 
+     dplyr::mutate(year = dplyr::case_when(stringr::str_detect(year,"\\d{4}") ~ year,
+                                                               TRUE ~ as.character(current_fiscal_year))) %>% 
+    dplyr::mutate(technical_area = stringr::str_trim(stringr::str_extract(de_name,"^[^(]+"))) %>% 
+    dplyr::distinct()
   
   
   #Technical area
-  
-  tech_area <-
-    paste0(
-      d2_session$base_url,
-      "api/dataElementGroupSets/LxhLO68FcXm?fields=dataElementGroups[id,name,dataElements[id]&paging=false"
-    ) %>%
-    .getResponse(., d2_session = d2_session) %>% 
-    httr::content("text") %>% 
-    jsonlite::fromJSON() %>%
-    purrr::pluck("dataElementGroups") %>%
-    tidyr::unnest_longer(., "dataElements", simplify = TRUE) %>%
-    dplyr::mutate(de_uid = dataElements$id) %>%
-    dplyr::select(-id, -dataElements) %>%
-    dplyr::rename("technical_area" = name) 
-
-  
-  des <- des %>% dplyr::left_join(tech_area, by = "de_uid") %>% 
-    dplyr::mutate(tech_area_regex = stringr::str_extract(de_name,'^([A-Za-z0-9_\\.]+)'),
-                  technical_area = dplyr::case_when(is.na(technical_area) ~ tech_area_regex,
-                                                          TRUE ~ technical_area)) %>% 
-    dplyr::select(-tech_area_regex)
+  # 
+  # tech_area <-
+  #   paste0(
+  #     d2_session$base_url,
+  #     "api/dataElementGroupSets/LxhLO68FcXm?fields=dataElementGroups[id,name,dataElements[id]&paging=false"
+  #   ) %>%
+  #   .getResponse(., d2_session = d2_session) %>% 
+  #   httr::content("text") %>% 
+  #   jsonlite::fromJSON() %>%
+  #   purrr::pluck("dataElementGroups") %>%
+  #   tidyr::unnest_longer(., "dataElements", simplify = TRUE) %>%
+  #   dplyr::mutate(de_uid = dataElements$id) %>%
+  #   dplyr::select(-id, -dataElements) %>%
+  #   dplyr::rename("technical_area" = name) 
+  # 
+  # 
+  # des <- des %>% dplyr::left_join(tech_area, by = "de_uid") %>% 
+  #   dplyr::mutate(tech_area_regex = stringr::str_extract(de_name,'^([A-Za-z0-9_\\.]+)'),
+  #                 technical_area = dplyr::case_when(is.na(technical_area) ~ tech_area_regex,
+  #                                                         TRUE ~ technical_area)) %>% 
+  #   dplyr::select(-tech_area_regex)
 
   
   getListElement<-function(x,n) tryCatch(str_trim(str_split(x,","))[[n]],  error = function(e) return(NA))
@@ -159,20 +201,16 @@ getNarrativeDataElements<-function(fiscal_year= NA, type="Results", d2_session) 
                    sep = ", ") %>% 
    dplyr::mutate(support_type = stringr::str_remove(support_type, "[ _]NARRATIVE")) %>% 
    dplyr::select("support_type") %>% 
-   dplyr::mutate(support_type = dplyr::case_when(is.na(support_type) ~'N/A',
-                                                 support_type == "NARRATIVE" ~ 'N/A',
+   dplyr::mutate(support_type = dplyr::case_when(is.na(support_type) ~'NoApp',
+                                                 support_type == "NARRATIVE" ~ 'NoApp',
                                                  TRUE ~ support_type))
   
-   out <- dplyr::bind_cols(des,support_type) %>% 
-    dplyr::filter(type == type)
+   out <- dplyr::bind_cols(des,support_type)
   
-  if (!is.na(fiscal_year)) {
-     out <- out %>% 
-       dplyr::filter(year == fiscal_year)
-   }
-
     out %>% 
-    dplyr::arrange(technical_area)
+    dplyr::select(-name) %>% 
+    dplyr::distinct() %>% 
+    dplyr::arrange(technical_area) 
    
 }
 
@@ -218,7 +256,6 @@ convertFYQuarterCalendarQuarter<-function(fiscal_year,fiscal_quarter) {
 assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des, d2_session ) {
   
   this_period<-convertFYQuarterCalendarQuarter(fiscal_year, fiscal_quarter )
-
   base_url<-paste0(d2_session$base_url,"api/analytics?")
   
   mechanisms_bit<-paste0("dimension=SH885jaRe0o")
@@ -236,13 +273,12 @@ assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des, d2_
 assembleUSGNarrativeURL<-function(ou, fiscal_year, fiscal_quarter, d2_session ) {
   
   this_period<-convertFYQuarterCalendarQuarter(fiscal_year , fiscal_quarter)
-  
   base_url<-paste0(d2_session$base_url,"api/analytics?")
   period_bit<-paste0("&filter=pe:", this_period)
-  des<-getUSGNarrativeDataElements(d2_session = d2_session) %>% unlist()
+  des<-getUSGNarrativeDataElements(fiscal_year,d2_session = d2_session) %>% unlist()
   de_bit<-paste0("&dimension=dx:",paste(des,sep="",collapse=";"))
   ou_bit<-paste0("&dimension=ou:", paste(ou,sep="",collapse=";"))
-  end_bit<-"&filter=ao:xYerKDKCefk&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
+  end_bit<-"&filter=ao:HllvX50cXC0&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
   paste0(base_url,de_bit,ou_bit,period_bit,end_bit)
   
 }
