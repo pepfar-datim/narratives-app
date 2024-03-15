@@ -77,7 +77,7 @@ cat('\n\n')
 
 country_data<-partner_data %>% 
     dplyr::filter(country == unique_countries[x]) %>% 
-    dplyr::arrange(agency_name,mech_code,`Data`)
+    dplyr::arrange(agency_name,mech_code,technical_area,support_type)
   
 unique_mechs<-unique(sort(country_data$mech_code))
 
@@ -104,7 +104,7 @@ for ( y in seq_along(unique_mechs)) {
 
 mech_data<-country_data %>%  
   dplyr::filter(mech_code == unique_mechs[y]) %>%
-  dplyr::arrange(partner_name,mech_code,`Data`)
+  dplyr::arrange(partner_name,mech_code,technical_area, support_type)
   
 cat(paste0("### Mechanism: ",mech_data$mech_name[1]))
 cat('\n\n')
