@@ -192,7 +192,7 @@ shinyServer(function(input, output, session) {
       user_input$is_usg_user <- isUSGUser(d2_session = user_input$d2_session)
       user_input$user_mechs<-getUserMechanisms(d2_session = user_input$d2_session) 
       user_input$mech_dropdown <- getMechDropDown(user_input$user_mechs,NULL)
-      user_input$partner_data_elements<-getNarrativeDataElements(user_input$fiscal_year, d2_session = user_input$d2_session)
+      user_input$partner_data_elements<-getNarrativeDataElements(d2_session = user_input$d2_session)
       user_input$data_elements_dropdown <- user_input$partner_data_elements %>% 
         dplyr::select(technical_area) %>% 
         dplyr::distinct() %>% 
@@ -466,7 +466,6 @@ shinyServer(function(input, output, session) {
       file.copy(img, 'pepfar.png', overwrite = TRUE)
       
       library(rmarkdown)
-      
       out <- rmarkdown::render('report.Rmd', word_document())
       file.rename(out, file)
     }
@@ -485,6 +484,7 @@ shinyServer(function(input, output, session) {
       
       partner_data<-filtered_narratives() %>% 
         purrr::pluck("partner") 
+      
       if (!is.null(partner_data) & NROW(partner_data) > 0) {
         partner_data %<>% dplyr::select("Operating unit"  = ou,
                       "Country" = country,
@@ -540,29 +540,29 @@ shinyServer(function(input, output, session) {
             if ( is.null(input$des )) {return(user_input$partner_data_elements$de_uid)} else {
               user_input$partner_data_elements %>% 
                 dplyr::filter(technical_area %in% input$des) %>% 
+                dplyr::filter(year = user_input$fiscal_year) %>% 
                 dplyr::pull(de_uid) %>% 
                 unique(.)
             } }
         
-      
+      all_des <- get_des()
       d<-list()
       
       url <- assemblePartnerNarrativeURL(ou = countries, 
                                          fiscal_year = user_input$fiscal_year,
                                          fiscal_quarter = user_input$fiscal_quarter,
-                                         all_des = get_des(),
+                                         all_des = all_des,
                                          d2_session = user_input$d2_session)
 
   
-      d$partner <- d2_analyticsResponse(url, d2_session = user_input$d2_session)
+      d$partner <- d2_analyticsResponse(url, remapCols = FALSE,d2_session = user_input$d2_session)
     
       if (user_input$is_usg_user  & input$includeUSGNarratives ) {
         url<- assembleUSGNarrativeURL(ou = countries,
                                       fiscal_year = user_input$fiscal_year,
                                       fiscal_quarter = user_input$fiscal_quarter,
                                       d2_session = user_input$d2_session)
- 
-        d$usg<-d2_analyticsResponse(url, d2_session = user_input$d2_session)
+        d$usg<-d2_analyticsResponse(url, remapCols = FALSE, d2_session = user_input$d2_session)
      
       } else {
         d$usg<-NULL
@@ -581,25 +581,29 @@ shinyServer(function(input, output, session) {
         return(NULL)
         ready$needs_refresh <- FALSE
       }
-      
+      de_map <-  user_input$partner_data_elements %>% 
+        dplyr::select(de_name,de_uid,technical_area, support_type) %>% 
+        dplyr::distinct()
       if(!is.null(d$partner)) {
         
-        d$partner  %<>% dplyr::rename(country = `Organisation unit`) %>% 
-          dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
-          dplyr::mutate(mech_code =  ( stringr::str_split(`Funding Mechanism`," - ") %>% 
-                                         purrr::map(.,purrr::pluck(2)) %>% 
-                                         unlist() ) ) %>% 
-          dplyr::left_join(user_input$user_mechs, by = "mech_code") %>%  
-          dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+        d$partner  %<>% 
+          dplyr::rename(country_id = `Organisation unit`) %>% 
+          dplyr::rename(category_option_id = `Funding Mechanism`) %>% 
+          dplyr::rename(de_uid = `Data`) %>% 
+          dplyr::inner_join(user_input$user_operating_units,by = "country_id") %>%
+          dplyr::left_join(user_input$user_mechs, by = "category_option_id") %>%  
+          dplyr::left_join(de_map, by="de_uid")
         
       }
 
       
       if (!is.null(d$usg)) {
         
-        d$usg %<>% dplyr::rename(country = `Organisation unit`) %>% 
-          dplyr::inner_join(user_input$user_operating_units,by="country") %>% 
-          dplyr::left_join(user_input$partner_data_elements, by=c(`Data` = "de_name"))
+        d$usg %<>% 
+          dplyr::rename(country_id = `Organisation unit`) %>% 
+          dplyr::rename(de_uid = `Data`) %>% 
+          dplyr::inner_join(user_input$user_operating_units,by="country_id") %>% 
+          dplyr::left_join(de_map, by="de_uid")
       }
       
       
