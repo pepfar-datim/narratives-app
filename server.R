@@ -26,12 +26,12 @@ oauth_app <- httr::oauth_app(Sys.getenv("OAUTH_APPNAME"),
                              redirect_uri = APP_URL)
 
 
-oauth_api <- httr::oauth_endpoint(base_url = paste0(getBaseURL(), "uaa/oauth"),
+oauth_api <- httr::oauth_endpoint(base_url = paste0(Sys.getenv("OAUTH_URL"), "oauth2/v1"),
                                   request = NULL, # Documentation says to leave this NULL for OAuth2
                                   authorize = "authorize",
                                   access = "token")
 
-oauth_scope <- "ALL"
+oauth_scope <- "openid"
 
 
 has_auth_code <- function(params) {
@@ -136,42 +136,31 @@ shinyServer(function(input, output, session) {
     #Wait until the auth code actually exists
     req(has_auth_code(params))
     
-    #Manually create a token
-    token <- httr::oauth2.0_token(
-      app = oauth_app,
-      endpoint = oauth_api,
-      scope = oauth_scope,
-      use_basic_auth = TRUE,
-      oob_value = APP_URL,
-      cache = FALSE,
-      credentials = httr::oauth2.0_access_token(endpoint = oauth_api,
-                                                app = oauth_app,
-                                                code = params$code,
-                                                use_basic_auth = TRUE)
-    )
+    req <- httr::POST(oauth_api$access, encode = "form",
+                body = list(
+                  redirect_uri = APP_URL,
+                  grant_type = "authorization_code",
+                  code = params$code),
+                httr::authenticate(oauth_app$key, oauth_app$secret))
+    token <- httr::content(req)
+      url <- utils::URLencode(URL = paste0(Sys.getenv("BASE_URL"), "api", "/me"))
+      handle <- httr::handle(Sys.getenv("BASE_URL"))
+      #Get Request
+      r <- httr::GET(
+        url,
+        httr::add_headers(Authorization = paste("Bearer", token$access_token, sep = " ")),
+        httr::timeout(60),
+        handle = handle
+      )
 
-    loginAttempt <- tryCatch({
-      
-      datimutils::loginToDATIMOAuth(base_url =  getBaseURL(),
-                                    token = token,
-                                    app = oauth_app,
-                                    api = oauth_api,
-                                    redirect_uri = APP_URL,
-                                    scope = oauth_scope,
-                                    d2_session_envir = parent.env(environment()))
-      
-    },
-    # This function throws an error if the login is not successful
-    error = function(e) {
-      shinyWidgets::sendSweetAlert(
-        session,
-        title = "Login failed",
-        text = "Please check your username/password!",
-        type = "error")
-      flog.info(paste0("User ", input$user_name, " login failed. ", e$message), name = "datapack")
-    }
-    )
-    
+      me <- jsonlite::fromJSON(httr::content(r, as = "text"))
+      d2_default_session <- d2Session$new(
+        base_url = Sys.getenv("BASE_URL"),
+        me = me,
+        handle = handle,
+        token = token
+      )
+
     waiter::waiter_show(html = waiting_screen, color = "black")
     if (exists("d2_default_session")) {
       shinyWidgets::sendSweetAlert(

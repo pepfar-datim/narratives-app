@@ -13,7 +13,7 @@
               handle = d2_session$handle,
               httr::add_headers(Authorization =
                                   paste("Bearer",
-                                        d2_session$token$credentials$access_token, sep = " ")))
+                                        d2_session$token$access_token, sep = " ")))
   }
 }
 #' Title getBaseURL()
@@ -60,8 +60,11 @@ getOperatingUnits<-function(d2_session) {
   
   
   ou_map<-paste0(d2_session$base_url,"api/dataStore/dataSetAssignments/orgUnitLevels") %>% 
-    .getResponse(., d2_session = d2_session) %>% 
-    httr::content(.,"text") %>% 
+    .getResponse(., d2_session = d2_session) 
+  if (ou_map$status_code != 200L) {
+    stop("Error getting orgunit levels")
+  }
+    httr::content(ou_map,"text") %>% 
     jsonlite::fromJSON(.) %>% 
     dplyr::bind_rows() %>% 
     dplyr::rowwise() %>% 
@@ -429,3 +432,50 @@ getVersionInfo <- function() {
     paste('<div style="font-size:small;text-align: center;"><p>', .) %>%
     paste(., "</p></div>")
 }
+
+d2Session <- R6::R6Class("d2Session",
+                         #' @title d2Session
+                         public = list(
+                           #' @field  config_path Path to a JSON configuration
+                           #' file.
+                           config_path = NULL,
+                           #' @field  base_url The URL of the server,
+                           #' e.g. https://www.datim.org/.
+                           base_url = NULL,
+                           #' @field  username Your user name.
+                           username = NULL,
+                           #' @field user_orgunit UID of the users assigned
+                           #' organisation unit
+                           user_orgunit = NULL,
+                           #' @field handle An httr handle used to communicate
+                           #' with the DHIS2 instance.
+                           handle = NULL,
+                           #' @field me dhis2 api/me response
+                           me  = NULL,
+                           #' @field max_cache_age Maximum time responses should be cached
+                           max_cache_age  = NULL,
+                           #' @field token An httr OAUTH2 token
+                           token = NULL,
+                           #' @description
+                           #' Create a new DHISLogin object
+                           #' @param config_path Configuration file path
+                           #' @param base_url URL to the server.
+                           #' @param handle httr handle to be used for dhis2
+                           #' connections
+                           #' @param me DHIS2 me response object
+                           #' @param token OAUTH2 token
+                           initialize = function(config_path = NA_character_,
+                                                 base_url,
+                                                 handle,
+                                                 me,
+                                                 token) {
+                             self$config_path <- config_path
+                             self$me <- me
+                             self$user_orgunit <- me$organisationUnits$id
+                             self$base_url <- base_url
+                             self$username <- me$userCredentials$username
+                             self$handle <- handle
+                             self$token <- token
+                           }
+                         )
+)
