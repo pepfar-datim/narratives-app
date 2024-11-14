@@ -257,12 +257,11 @@ assemblePartnerNarrativeURL<-function(ou,fiscal_year,fiscal_quarter,all_des, d2_
   
   this_period<-convertFYQuarterCalendarQuarter(fiscal_year, fiscal_quarter )
   base_url<-paste0(d2_session$base_url,"api/analytics?")
-  
   mechanisms_bit<-paste0("dimension=SH885jaRe0o")
 
   period_bit<-paste0("&filter=pe:", this_period)
-  de_bit<-paste0("&dimension=dx:",paste(all_des,sep="",collapse=";"))
-  ou_bit<-paste0("&dimension=ou:", paste(ou,sep="",collapse=";"))
+  de_bit<-paste0("&dimension=dx:",paste(unique(all_des),sep="",collapse=";"))
+  ou_bit<-paste0("&dimension=ou:", paste(unique(ou),sep="",collapse=";"))
   end_bit<-"&displayProperty=SHORTNAME&skipData=false&includeMetadataDetails=false&outputIdScheme=uid"
   
   url <-paste0(base_url,mechanisms_bit,de_bit,ou_bit,period_bit,end_bit)

@@ -537,13 +537,20 @@ shinyServer(function(input, output, session) {
         
       get_des<- function()
         {
-            if ( is.null(input$des )) {return(user_input$partner_data_elements$de_uid)} else {
-              user_input$partner_data_elements %>% 
-                dplyr::filter(technical_area %in% input$des) %>% 
-                dplyr::filter(year = user_input$fiscal_year) %>% 
-                dplyr::pull(de_uid) %>% 
-                unique(.)
-            } }
+        if (is.null(input$des)) {
+          return(
+            user_input$partner_data_elements %>%
+              dplyr::filter(year == user_input$fiscal_year) %>%
+                              dplyr::pull(de_uid) %>%
+                              unique(.)
+          )
+        } else {
+          user_input$partner_data_elements %>%
+            dplyr::filter(technical_area %in% input$des) %>%
+            dplyr::filter(year = user_input$fiscal_year) %>%
+            dplyr::pull(de_uid) %>%
+            unique(.)
+        } }
         
       all_des <- get_des()
       d<-list()
@@ -554,8 +561,9 @@ shinyServer(function(input, output, session) {
                                          all_des = all_des,
                                          d2_session = user_input$d2_session)
 
-  
-      d$partner <- d2_analyticsResponse(url, remapCols = FALSE,d2_session = user_input$d2_session)
+      browser()
+      d$partner <- d2_analyticsResponse(url, remapCols = FALSE,
+                                        d2_session = user_input$d2_session)
     
       if (user_input$is_usg_user  & input$includeUSGNarratives ) {
         url<- assembleUSGNarrativeURL(ou = countries,
