@@ -1,6 +1,6 @@
 Package: datim-narratives-app
 Type: Shiny App
-Title: Self-service app for analyzing narrative data
+Title: Self-service app for analyzing MER narrative data
 Version: 0.0.9
 Date: 2024-11-14
 Authors@R: c( person("Jason", "Pickering", email =
